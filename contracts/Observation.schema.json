@@ -1,0 +1,57 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "observation_id": {
+      "format": "uuid",
+      "title": "Observation Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "trust": {
+      "enum": [
+        "UNTRUSTED_DOCUMENT",
+        "UNTRUSTED_WEB",
+        "UNTRUSTED_MCP_OUTPUT"
+      ],
+      "title": "Trust",
+      "type": "string"
+    },
+    "evidence_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "observation_id",
+    "workspace_id",
+    "task_id",
+    "content",
+    "trust",
+    "evidence_ids"
+  ],
+  "title": "Observation",
+  "type": "object"
+}

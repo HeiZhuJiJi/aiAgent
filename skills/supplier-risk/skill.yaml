@@ -1,0 +1,25 @@
+name: supplier-risk
+version: 1.0.0
+description: Governed supplier risk assessment and admission workflow.
+runtime_contract: 1
+dependencies:
+  - capability_id: knowledge.hybrid_search
+    version_range: ">=1,<2"
+  - capability_id: procurement.get_supplier_profile
+    version_range: ">=1,<2"
+  - capability_id: procurement.get_supplier_purchase_history
+    version_range: ">=1,<2"
+  - capability_id: procurement.get_supplier_risk_flags
+    version_range: ">=1,<2"
+  - capability_id: procurement.get_supplier_contracts
+    version_range: ">=1,<2"
+  - capability_id: web.search
+    version_range: ">=1,<2"
+  - capability_id: model.structured_output
+    version_range: ">=1,<2"
+  - capability_id: runtime.review
+    version_range: ">=1,<2"
+  - capability_id: artifact.docx
+    version_range: ">=1,<2"
+  - capability_id: procurement.create_supplier_admission_request
+    version_range: ">=1,<2"

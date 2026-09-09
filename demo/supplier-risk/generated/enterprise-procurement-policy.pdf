@@ -1,0 +1,31 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 600 >>
+stream
+BT /F1 11 Tf 50 790 Td 15 TL (Enterprise Procurement Admission Policy v1.0) Tj T* (1. Supplier registration status must be ACTIVE.) Tj T* (2. Any CRITICAL integrity or fraud risk in the last 24 months requires rejection.) Tj T* (3. At least three completed orders and a 90 percent on-time delivery rate are required.) Tj T* (4. An ACTIVE prior or trial contract is required for standard admission.) Tj T* (5. Missing screening, history, or contract evidence requires additional research and replan.) Tj T* (6. Admission creation is an external side effect and requires explicit human approval.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000892 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+962
+%%EOF

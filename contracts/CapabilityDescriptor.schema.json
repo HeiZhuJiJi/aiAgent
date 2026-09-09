@@ -1,0 +1,232 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "max_attempts": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Max Attempts",
+          "type": "integer"
+        },
+        "initial_delay_sec": {
+          "exclusiveMinimum": 0,
+          "title": "Initial Delay Sec",
+          "type": "number"
+        },
+        "max_delay_sec": {
+          "exclusiveMinimum": 0,
+          "title": "Max Delay Sec",
+          "type": "number"
+        }
+      },
+      "required": [
+        "max_attempts",
+        "initial_delay_sec",
+        "max_delay_sec"
+      ],
+      "title": "RetryPolicy",
+      "type": "object"
+    },
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "Version",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "BUILTIN",
+        "FILE",
+        "RAG",
+        "WEB",
+        "MCP",
+        "SERVICE",
+        "MODEL"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "input_schema": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Input Schema",
+      "type": "object"
+    },
+    "output_schema": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Output Schema",
+      "type": "object"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags",
+      "type": "array"
+    },
+    "risk_level": {
+      "$ref": "#/$defs/Risk"
+    },
+    "side_effect_mode": {
+      "enum": [
+        "NONE",
+        "INTERNAL",
+        "EXTERNAL"
+      ],
+      "title": "Side Effect Mode",
+      "type": "string"
+    },
+    "idempotency_mode": {
+      "enum": [
+        "READ_ONLY",
+        "NATIVE_IDEMPOTENCY",
+        "RECONCILABLE",
+        "NON_RETRYABLE"
+      ],
+      "title": "Idempotency Mode",
+      "type": "string"
+    },
+    "compensation_mode": {
+      "enum": [
+        "NONE",
+        "AUTO",
+        "MANUAL",
+        "NOT_REVERSIBLE"
+      ],
+      "title": "Compensation Mode",
+      "type": "string"
+    },
+    "compensation_capability": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Compensation Capability"
+    },
+    "reconciliation_capability": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Reconciliation Capability"
+    },
+    "timeout_sec": {
+      "exclusiveMinimum": 0,
+      "title": "Timeout Sec",
+      "type": "number"
+    },
+    "retry_policy": {
+      "$ref": "#/$defs/RetryPolicy"
+    },
+    "required_permissions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Permissions",
+      "type": "array",
+      "uniqueItems": true
+    },
+    "approval_policy": {
+      "enum": [
+        "NONE",
+        "REQUIRED"
+      ],
+      "title": "Approval Policy",
+      "type": "string"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "health_status": {
+      "enum": [
+        "ACTIVE",
+        "DEPRECATED",
+        "DISABLED",
+        "UNHEALTHY",
+        "UNSUPPORTED"
+      ],
+      "title": "Health Status",
+      "type": "string"
+    },
+    "cost_hint": {
+      "minimum": 0,
+      "title": "Cost Hint",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "version",
+    "kind",
+    "description",
+    "input_schema",
+    "output_schema",
+    "tags",
+    "risk_level",
+    "side_effect_mode",
+    "idempotency_mode",
+    "compensation_mode",
+    "compensation_capability",
+    "reconciliation_capability",
+    "timeout_sec",
+    "retry_policy",
+    "required_permissions",
+    "approval_policy",
+    "provider",
+    "health_status",
+    "cost_hint"
+  ],
+  "title": "CapabilityDescriptor",
+  "type": "object"
+}

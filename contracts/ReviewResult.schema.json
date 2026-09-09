@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "accepted": {
+      "title": "Accepted",
+      "type": "boolean"
+    },
+    "missing_deliverables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Deliverables",
+      "type": "array"
+    },
+    "unsupported_claims": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Unsupported Claims",
+      "type": "array"
+    },
+    "constraint_violations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Constraint Violations",
+      "type": "array"
+    },
+    "citation_errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Citation Errors",
+      "type": "array"
+    }
+  },
+  "required": [
+    "accepted",
+    "missing_deliverables",
+    "unsupported_claims",
+    "constraint_violations",
+    "citation_errors"
+  ],
+  "title": "ReviewResult",
+  "type": "object"
+}

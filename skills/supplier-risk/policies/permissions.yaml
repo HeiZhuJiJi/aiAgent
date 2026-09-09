@@ -1,0 +1,4 @@
+permissions:
+  - knowledge.read
+  - supplier.read
+  - supplier.write

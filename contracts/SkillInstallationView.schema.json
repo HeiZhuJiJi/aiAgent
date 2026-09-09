@@ -1,0 +1,138 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "installation_id": {
+      "format": "uuid",
+      "title": "Installation Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "skill_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Skill Id"
+    },
+    "skill_version_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Skill Version Id"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "skill_version": {
+      "title": "Skill Version",
+      "type": "string"
+    },
+    "archive_sha256": {
+      "title": "Archive Sha256",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "QUARANTINED",
+        "REJECTED",
+        "PENDING_CONFIRMATION",
+        "INSTALLED",
+        "ENABLED",
+        "DISABLED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "permission_diff": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Permission Diff",
+      "type": "array"
+    },
+    "safe_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Safe Error"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "confirmed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Confirmed At"
+    },
+    "enabled_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Enabled At"
+    }
+  },
+  "required": [
+    "installation_id",
+    "workspace_id",
+    "skill_id",
+    "skill_version_id",
+    "name",
+    "skill_version",
+    "archive_sha256",
+    "state",
+    "version",
+    "permission_diff",
+    "safe_error",
+    "created_at",
+    "confirmed_at",
+    "enabled_at"
+  ],
+  "title": "SkillInstallationView",
+  "type": "object"
+}

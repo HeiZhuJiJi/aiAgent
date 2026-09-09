@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "ProjectMemoryType": {
+      "enum": [
+        "FACT",
+        "DECISION",
+        "PREFERENCE"
+      ],
+      "title": "ProjectMemoryType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "memory_id": {
+      "format": "uuid",
+      "title": "Memory Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "content": {
+      "maxLength": 32000,
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/ProjectMemoryType"
+    },
+    "source": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes"
+    }
+  },
+  "required": [
+    "memory_id",
+    "workspace_id",
+    "content",
+    "type",
+    "source",
+    "confidence",
+    "created_at"
+  ],
+  "title": "ProjectMemory",
+  "type": "object"
+}

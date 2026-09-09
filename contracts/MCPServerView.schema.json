@@ -1,0 +1,107 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "server_id": {
+      "format": "uuid",
+      "title": "Server Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "transport": {
+      "const": "STDIO",
+      "title": "Transport",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "REGISTERED",
+        "ACTIVE",
+        "UNHEALTHY",
+        "DISABLED"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "schema_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Schema Hash"
+    },
+    "capability_count": {
+      "title": "Capability Count",
+      "type": "integer"
+    },
+    "last_health_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Health At"
+    },
+    "safe_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Safe Error"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "server_id",
+    "workspace_id",
+    "name",
+    "provider",
+    "transport",
+    "status",
+    "version",
+    "schema_hash",
+    "capability_count",
+    "last_health_at",
+    "safe_error",
+    "created_at"
+  ],
+  "title": "MCPServerView",
+  "type": "object"
+}

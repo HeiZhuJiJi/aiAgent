@@ -1,0 +1,63 @@
+[
+  {
+    "ablation_id": "planner",
+    "treatment": "Planner",
+    "control": "No Planner",
+    "feature_flag": "planner_enabled",
+    "primary_metrics": [
+      "task_success_rate",
+      "plan_valid_rate"
+    ]
+  },
+  {
+    "ablation_id": "replan",
+    "treatment": "Replan",
+    "control": "No Replan",
+    "feature_flag": "replan_enabled",
+    "primary_metrics": [
+      "task_success_rate",
+      "replan_success_rate"
+    ]
+  },
+  {
+    "ablation_id": "context",
+    "treatment": "Context Manager",
+    "control": "Full Context",
+    "feature_flag": "context_manager_enabled",
+    "primary_metrics": [
+      "task_success_rate",
+      "mean_latency_ms",
+      "total_tokens"
+    ]
+  },
+  {
+    "ablation_id": "reviewer",
+    "treatment": "Conditional Reviewer",
+    "control": "No Reviewer",
+    "feature_flag": "reviewer_enabled",
+    "primary_metrics": [
+      "claim_grounding_rate",
+      "citation_correctness"
+    ]
+  },
+  {
+    "ablation_id": "capability-retrieval",
+    "treatment": "Dynamic Capability Retrieval",
+    "control": "All Capabilities",
+    "feature_flag": "dynamic_capability_retrieval",
+    "primary_metrics": [
+      "capability_selection_accuracy",
+      "mean_latency_ms"
+    ]
+  },
+  {
+    "ablation_id": "research-execution",
+    "treatment": "Single Agent",
+    "control": "Parallel Research Sub-Agent",
+    "feature_flag": "parallel_research",
+    "primary_metrics": [
+      "task_success_rate",
+      "mean_latency_ms"
+    ]
+  }
+]

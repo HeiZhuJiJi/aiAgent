@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enterprise-agent-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: enterprise-agent-worker
+  template:
+    metadata:
+      labels:
+        app: enterprise-agent-worker
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: worker
+          image: enterprise-agent-backend
+          command: ["python", "-m", "apps.worker.main"]
+          envFrom:
+            - configMapRef:
+                name: enterprise-agent-config
+            - secretRef:
+                name: enterprise-agent-secrets
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: enterprise-agent-worker
+            - name: WORKER_METRICS_PORT
+              value: "9464"
+          ports:
+            - name: metrics
+              containerPort: 9464
+          livenessProbe:
+            tcpSocket:
+              port: metrics
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: enterprise-agent-worker
+spec:
+  selector:
+    app: enterprise-agent-worker
+  ports:
+    - name: metrics
+      port: 9464
+      targetPort: metrics

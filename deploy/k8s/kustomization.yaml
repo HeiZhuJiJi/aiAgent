@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: enterprise-agent
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - api.yaml
+  - worker.yaml
+  - web.yaml
+images:
+  - name: enterprise-agent-backend
+    newName: ghcr.io/example/enterprise-agent-backend
+    newTag: 0.1.0
+  - name: enterprise-agent-web
+    newName: ghcr.io/example/enterprise-agent-web
+    newTag: 0.1.0

@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "message_id": {
+      "format": "uuid",
+      "title": "Message Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "conversation_id": {
+      "format": "uuid",
+      "title": "Conversation Id",
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "SYSTEM",
+        "USER",
+        "ASSISTANT"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "content": {
+      "maxLength": 1000000,
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message_id",
+    "workspace_id",
+    "conversation_id",
+    "role",
+    "content",
+    "created_at"
+  ],
+  "title": "ConversationMessage",
+  "type": "object"
+}

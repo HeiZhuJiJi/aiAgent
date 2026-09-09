@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "capability_id": {
+      "title": "Capability Id",
+      "type": "string"
+    },
+    "version_range": {
+      "title": "Version Range",
+      "type": "string"
+    }
+  },
+  "required": [
+    "capability_id",
+    "version_range"
+  ],
+  "title": "CapabilityRequirement",
+  "type": "object"
+}

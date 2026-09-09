@@ -1,0 +1,150 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "checkpoint_id": {
+      "format": "uuid",
+      "title": "Checkpoint Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "sequence": {
+      "exclusiveMinimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "active_plan_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Active Plan Id"
+    },
+    "completed_steps": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Completed Steps",
+      "type": "array"
+    },
+    "running_step": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Running Step"
+    },
+    "attempt": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Attempt"
+    },
+    "evidence_refs": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "artifact_refs": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "budget_usage": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Budget Usage",
+      "type": "object"
+    },
+    "context_summary": {
+      "maxLength": 32000,
+      "title": "Context Summary",
+      "type": "string"
+    },
+    "operation_refs": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Operation Refs",
+      "type": "array"
+    },
+    "execution_snapshot_id": {
+      "format": "uuid",
+      "title": "Execution Snapshot Id",
+      "type": "string"
+    },
+    "resume_token": {
+      "maxLength": 200,
+      "minLength": 16,
+      "title": "Resume Token",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "checkpoint_id",
+    "workspace_id",
+    "task_id",
+    "sequence",
+    "active_plan_id",
+    "completed_steps",
+    "running_step",
+    "attempt",
+    "evidence_refs",
+    "artifact_refs",
+    "budget_usage",
+    "context_summary",
+    "operation_refs",
+    "execution_snapshot_id",
+    "resume_token",
+    "created_at"
+  ],
+  "title": "Checkpoint",
+  "type": "object"
+}

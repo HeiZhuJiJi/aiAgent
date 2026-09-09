@@ -1,0 +1,23 @@
+{
+  "workspace_id": "00000000-0000-4000-8000-000000000100",
+  "suppliers": [
+    {
+      "supplier_id": "f6a654be-d36c-58dd-a4a3-2f7e687753cb",
+      "label": "Supplier A",
+      "expected_outcome": "ADMIT",
+      "expected_reason": "Active registration, clean risk record and 100% delivered orders."
+    },
+    {
+      "supplier_id": "f7669b07-fe68-575a-a720-fcc877f75770",
+      "label": "Supplier B",
+      "expected_outcome": "REJECT",
+      "expected_reason": "Suspended registration, critical fraud flag and repeated late delivery."
+    },
+    {
+      "supplier_id": "d93dadc2-a76f-5c8d-ac7a-2d8b644d264f",
+      "label": "Supplier C",
+      "expected_outcome": "REPLAN",
+      "expected_reason": "Only one order and no verified risk event response; evidence is insufficient."
+    }
+  ]
+}

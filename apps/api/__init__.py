@@ -1,0 +1,1 @@
+"""FastAPI modular monolith entrypoint."""

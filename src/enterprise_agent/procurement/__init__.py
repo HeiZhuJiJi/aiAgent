@@ -1,0 +1,1 @@
+"""Independent procurement service domain."""

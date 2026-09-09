@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "total_cases": 72,
+  "evaluated_cases": 3,
+  "evaluated_case_rate": 0.041666666666666664,
+  "task_success_rate": 1.0,
+  "plan_valid_rate": 1.0,
+  "capability_selection_accuracy": null,
+  "citation_correctness": null,
+  "evidence_coverage": null,
+  "claim_grounding_rate": null,
+  "recovery_success_rate": null,
+  "duplicate_side_effect_rate": 0.0,
+  "policy_violation_rate": null,
+  "hitl_accuracy": 1.0,
+  "replan_success_rate": 1.0,
+  "mean_latency_ms": null,
+  "total_tokens": null,
+  "total_cost": null
+}

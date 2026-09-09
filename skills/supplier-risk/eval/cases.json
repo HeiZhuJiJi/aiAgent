@@ -1,0 +1,23 @@
+[
+  {
+    "case_id": "supplier-a-admit",
+    "supplier_label": "Supplier A",
+    "expected_decision": "ADMIT",
+    "expected_replan": false,
+    "expected_admission": true
+  },
+  {
+    "case_id": "supplier-b-reject",
+    "supplier_label": "Supplier B",
+    "expected_decision": "REJECT",
+    "expected_replan": false,
+    "expected_admission": false
+  },
+  {
+    "case_id": "supplier-c-replan",
+    "supplier_label": "Supplier C",
+    "expected_decision": "NEEDS_MORE_EVIDENCE",
+    "expected_replan": true,
+    "expected_admission": false
+  }
+]

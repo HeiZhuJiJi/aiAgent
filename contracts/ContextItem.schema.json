@@ -1,0 +1,59 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source": {
+      "title": "Source",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "priority": {
+      "title": "Priority",
+      "type": "integer"
+    },
+    "token_count": {
+      "minimum": 0,
+      "title": "Token Count",
+      "type": "integer"
+    },
+    "included": {
+      "title": "Included",
+      "type": "boolean"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "trust": {
+      "enum": [
+        "TRUSTED_PLATFORM",
+        "TRUSTED_WORKSPACE",
+        "USER_INPUT",
+        "UNTRUSTED_DOCUMENT",
+        "UNTRUSTED_WEB",
+        "UNTRUSTED_MCP_OUTPUT"
+      ],
+      "title": "Trust",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source",
+    "content",
+    "priority",
+    "token_count",
+    "included",
+    "reason",
+    "trust"
+  ],
+  "title": "ContextItem",
+  "type": "object"
+}

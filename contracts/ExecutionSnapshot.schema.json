@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "VersionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "identifier": {
+          "title": "Identifier",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "identifier",
+        "version",
+        "sha256"
+      ],
+      "title": "VersionRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "snapshot_id": {
+      "format": "uuid",
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "runtime_version": {
+      "title": "Runtime Version",
+      "type": "string"
+    },
+    "workflow_definition_version": {
+      "title": "Workflow Definition Version",
+      "type": "string"
+    },
+    "planner_prompt_version": {
+      "$ref": "#/$defs/VersionRef"
+    },
+    "router_prompt_version": {
+      "$ref": "#/$defs/VersionRef"
+    },
+    "reviewer_prompt_version": {
+      "$ref": "#/$defs/VersionRef"
+    },
+    "model_config_versions": {
+      "items": {
+        "$ref": "#/$defs/VersionRef"
+      },
+      "title": "Model Config Versions",
+      "type": "array"
+    },
+    "skill_versions": {
+      "items": {
+        "$ref": "#/$defs/VersionRef"
+      },
+      "title": "Skill Versions",
+      "type": "array"
+    },
+    "capability_versions": {
+      "items": {
+        "$ref": "#/$defs/VersionRef"
+      },
+      "title": "Capability Versions",
+      "type": "array"
+    },
+    "policy_version": {
+      "$ref": "#/$defs/VersionRef"
+    },
+    "knowledge_document_refs": {
+      "items": {
+        "$ref": "#/$defs/VersionRef"
+      },
+      "title": "Knowledge Document Refs",
+      "type": "array"
+    },
+    "context_policy_version": {
+      "$ref": "#/$defs/VersionRef"
+    },
+    "schema_versions": {
+      "items": {
+        "$ref": "#/$defs/VersionRef"
+      },
+      "title": "Schema Versions",
+      "type": "array"
+    },
+    "feature_flags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Feature Flags",
+      "type": "array",
+      "uniqueItems": true
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "snapshot_id",
+    "workspace_id",
+    "runtime_version",
+    "workflow_definition_version",
+    "planner_prompt_version",
+    "router_prompt_version",
+    "reviewer_prompt_version",
+    "model_config_versions",
+    "skill_versions",
+    "capability_versions",
+    "policy_version",
+    "knowledge_document_refs",
+    "context_policy_version",
+    "schema_versions",
+    "feature_flags",
+    "created_at"
+  ],
+  "title": "ExecutionSnapshot",
+  "type": "object"
+}

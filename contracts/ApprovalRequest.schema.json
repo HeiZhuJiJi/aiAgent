@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "approval_id": {
+      "format": "uuid",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "operation_id": {
+      "format": "uuid",
+      "title": "Operation Id",
+      "type": "string"
+    },
+    "capability_id": {
+      "title": "Capability Id",
+      "type": "string"
+    },
+    "capability_version": {
+      "title": "Capability Version",
+      "type": "string"
+    },
+    "parameters": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Parameters",
+      "type": "object"
+    },
+    "parameter_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Parameter Hash",
+      "type": "string"
+    },
+    "policy_version": {
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk"
+    },
+    "evidence_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "title": "Expires At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_id",
+    "workspace_id",
+    "task_id",
+    "operation_id",
+    "capability_id",
+    "capability_version",
+    "parameters",
+    "parameter_hash",
+    "policy_version",
+    "reason",
+    "risk",
+    "evidence_ids",
+    "expires_at"
+  ],
+  "title": "ApprovalRequest",
+  "type": "object"
+}

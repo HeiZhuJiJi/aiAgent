@@ -1,0 +1,62 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "outcome": {
+      "enum": [
+        "CLEAN",
+        "PARTIALLY_COMPENSATED",
+        "REQUIRES_MANUAL_ACTION",
+        "IRREVERSIBLE_EFFECTS_REMAIN"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "compensated_operations": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Compensated Operations",
+      "type": "array"
+    },
+    "remaining_operations": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Remaining Operations",
+      "type": "array"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "title": "Recorded At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id",
+    "workspace_id",
+    "outcome",
+    "compensated_operations",
+    "remaining_operations",
+    "recorded_at"
+  ],
+  "title": "CancellationResult",
+  "type": "object"
+}

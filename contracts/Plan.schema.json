@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "CapabilityRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "capability_id": {
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "version_range": {
+          "title": "Version Range",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "version_range"
+      ],
+      "title": "CapabilityRequirement",
+      "type": "object"
+    },
+    "PlanStepSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "step_key": {
+          "minLength": 1,
+          "title": "Step Key",
+          "type": "string"
+        },
+        "objective": {
+          "minLength": 1,
+          "title": "Objective",
+          "type": "string"
+        },
+        "dependencies": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "capability_requirements": {
+          "items": {
+            "$ref": "#/$defs/CapabilityRequirement"
+          },
+          "minItems": 1,
+          "title": "Capability Requirements",
+          "type": "array"
+        },
+        "expected_output": {
+          "title": "Expected Output",
+          "type": "string"
+        },
+        "success_criteria": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Success Criteria",
+          "type": "array"
+        },
+        "risk_hint": {
+          "$ref": "#/$defs/Risk"
+        },
+        "execution_mode": {
+          "enum": [
+            "CAPABILITY",
+            "RESEARCH_SUBAGENT",
+            "REVIEW"
+          ],
+          "title": "Execution Mode",
+          "type": "string"
+        },
+        "parallelizable": {
+          "title": "Parallelizable",
+          "type": "boolean"
+        },
+        "max_attempts": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Max Attempts",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "step_key",
+        "objective",
+        "capability_requirements",
+        "expected_output",
+        "success_criteria",
+        "risk_hint",
+        "execution_mode",
+        "parallelizable",
+        "max_attempts"
+      ],
+      "title": "PlanStepSpec",
+      "type": "object"
+    },
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "plan_id": {
+      "format": "uuid",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "execution_snapshot_id": {
+      "format": "uuid",
+      "title": "Execution Snapshot Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "goal": {
+      "title": "Goal",
+      "type": "string"
+    },
+    "constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "deliverables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Deliverables",
+      "type": "array"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/PlanStepSpec"
+      },
+      "minItems": 1,
+      "title": "Steps",
+      "type": "array"
+    }
+  },
+  "required": [
+    "plan_id",
+    "task_id",
+    "workspace_id",
+    "execution_snapshot_id",
+    "version",
+    "goal",
+    "constraints",
+    "deliverables",
+    "steps"
+  ],
+  "title": "Plan",
+  "type": "object"
+}

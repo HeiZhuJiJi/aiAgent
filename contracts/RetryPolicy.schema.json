@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "max_attempts": {
+      "maximum": 10,
+      "minimum": 1,
+      "title": "Max Attempts",
+      "type": "integer"
+    },
+    "initial_delay_sec": {
+      "exclusiveMinimum": 0,
+      "title": "Initial Delay Sec",
+      "type": "number"
+    },
+    "max_delay_sec": {
+      "exclusiveMinimum": 0,
+      "title": "Max Delay Sec",
+      "type": "number"
+    }
+  },
+  "required": [
+    "max_attempts",
+    "initial_delay_sec",
+    "max_delay_sec"
+  ],
+  "title": "RetryPolicy",
+  "type": "object"
+}

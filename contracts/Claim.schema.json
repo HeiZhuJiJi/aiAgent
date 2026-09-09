@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "claim_id": {
+      "format": "uuid",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "importance": {
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "title": "Importance",
+      "type": "string"
+    },
+    "risk_level": {
+      "$ref": "#/$defs/Risk"
+    },
+    "evidence_ids": {
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "workspace_id",
+    "task_id",
+    "content",
+    "importance",
+    "risk_level",
+    "evidence_ids"
+  ],
+  "title": "Claim",
+  "type": "object"
+}

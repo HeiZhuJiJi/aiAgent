@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["supplier_id", "decision", "risk_level", "report_artifact_id", "claim_ids"],
+  "properties": {
+    "supplier_id": {"type": "string", "format": "uuid"},
+    "decision": {"enum": ["ADMIT", "REJECT", "NEEDS_MORE_EVIDENCE"]},
+    "risk_level": {"enum": ["LOW", "MEDIUM", "HIGH", "UNKNOWN"]},
+    "report_artifact_id": {"type": "string", "format": "uuid"},
+    "claim_ids": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+    "admission_id": {"type": ["string", "null"], "format": "uuid"}
+  },
+  "additionalProperties": false
+}

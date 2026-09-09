@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enterprise-agent-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: enterprise-agent-web
+  template:
+    metadata:
+      labels:
+        app: enterprise-agent-web
+    spec:
+      containers:
+        - name: web
+          image: enterprise-agent-web
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: enterprise-agent-web
+spec:
+  selector:
+    app: enterprise-agent-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

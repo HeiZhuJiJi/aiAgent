@@ -1,0 +1,33 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Tasks created",
+      "targets": [{"expr": "rate(task_total[5m])", "refId": "A"}],
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Capability failures",
+      "targets": [{"expr": "sum by (capability, outcome) (rate(capability_failure_total[5m]))", "refId": "A"}],
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Recovery and reconciliation",
+      "targets": [
+        {"expr": "rate(recovery_total[5m])", "refId": "A"},
+        {"expr": "sum by (conclusion) (rate(reconciliation_total[5m]))", "refId": "B"}
+      ],
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}
+    }
+  ],
+  "schemaVersion": 41,
+  "tags": ["enterprise-agent-runtime"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "title": "Enterprise Agent Runtime Overview",
+  "uid": "enterprise-agent-runtime"
+}

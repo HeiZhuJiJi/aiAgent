@@ -1,0 +1,116 @@
+steps:
+  - step_key: collect-supplier-files
+    objective: Retrieve supplier-submitted files with stable document and locator identities.
+    dependencies: []
+    capability_requirements:
+      - capability_id: knowledge.hybrid_search
+        version_range: ">=1,<2"
+    expected_output: Supplier document Evidence
+    success_criteria: [Supplier identity and required declarations are cited]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 3
+  - step_key: collect-procurement-policy
+    objective: Retrieve the effective enterprise procurement admission policy.
+    dependencies: []
+    capability_requirements:
+      - capability_id: knowledge.hybrid_search
+        version_range: ">=1,<2"
+    expected_output: Policy Evidence
+    success_criteria: [Each eligibility rule has a document locator]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 3
+  - step_key: collect-procurement-records
+    objective: Retrieve the supplier profile, purchases, risk flags and contracts.
+    dependencies: []
+    capability_requirements:
+      - capability_id: procurement.get_supplier_profile
+        version_range: ">=1,<2"
+      - capability_id: procurement.get_supplier_purchase_history
+        version_range: ">=1,<2"
+      - capability_id: procurement.get_supplier_risk_flags
+        version_range: ">=1,<2"
+      - capability_id: procurement.get_supplier_contracts
+        version_range: ">=1,<2"
+    expected_output: Procurement MCP Evidence
+    success_criteria: [All four MCP reads have source identity and version]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 3
+  - step_key: collect-external-research
+    objective: Retrieve policy-permitted public registration, sanctions and litigation evidence.
+    dependencies: []
+    capability_requirements:
+      - capability_id: web.search
+        version_range: ">=1,<2"
+    expected_output: Public web Evidence
+    success_criteria: [Every result retains URL, retrieval time and content hash]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 3
+  - step_key: analyze-risk
+    objective: Compare evidence with policy and produce structured risk findings.
+    dependencies:
+      [collect-supplier-files, collect-procurement-policy, collect-procurement-records, collect-external-research]
+    capability_requirements:
+      - capability_id: model.structured_output
+        version_range: ">=1,<2"
+    expected_output: Structured findings and Claims
+    success_criteria: [Every material finding cites Evidence]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: detect-evidence-gaps
+    objective: Decide whether missing evidence requires a new plan version.
+    dependencies: [analyze-risk]
+    capability_requirements:
+      - capability_id: model.structured_output
+        version_range: ">=1,<2"
+    expected_output: Continue or EVIDENCE_INSUFFICIENT ReplanDecision
+    success_criteria: [Unknown facts are never converted into positive findings]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: review-claims
+    objective: Verify deliverables, policy constraints, Claim coverage and citation integrity.
+    dependencies: [detect-evidence-gaps]
+    capability_requirements:
+      - capability_id: runtime.review
+        version_range: ">=1,<2"
+    expected_output: Accepted ReviewResult
+    success_criteria: [No unsupported high-risk Claim remains]
+    risk_hint: READ
+    execution_mode: REVIEW
+    parallelizable: false
+    max_attempts: 2
+  - step_key: create-report
+    objective: Render the reviewed findings and citations as an immutable DOCX artifact.
+    dependencies: [review-claims]
+    capability_requirements:
+      - capability_id: artifact.docx
+        version_range: ">=1,<2"
+    expected_output: Hash-verified DOCX ArtifactManifest
+    success_criteria: [Critical Claims trace to Evidence and artifact bytes match SHA-256]
+    risk_hint: WRITE
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: create-admission-if-eligible
+    objective: Create one approved supplier admission request when the reviewed decision is eligible.
+    dependencies: [create-report]
+    capability_requirements:
+      - capability_id: procurement.create_supplier_admission_request
+        version_range: ">=1,<2"
+    expected_output: Admission identity or governed no-op decision
+    success_criteria: [External effect is operation-bound, approved and reconciliable]
+    risk_hint: EXTERNAL_SIDE_EFFECT
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 1

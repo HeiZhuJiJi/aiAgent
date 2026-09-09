@@ -1,0 +1,86 @@
+name: verification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Configure isolated CI secrets
+        run: |
+          cat > .env <<'EOF'
+          POSTGRES_PASSWORD=ci-platform-password
+          PROCUREMENT_DB_PASSWORD=ci-procurement-password
+          MINIO_ROOT_PASSWORD=ci-minio-password-123
+          SECRET_MASTER_KEY=Y2ktbWFzdGVyLWtleS0zMi1ieXRlcy1sb25nLTAwMDAwMDA=
+          EOF
+      - name: Install backend
+        run: python -m pip install -r requirements.lock.txt
+      - name: Install frontend
+        run: pnpm --dir apps/web install --frozen-lockfile
+      - name: Start real infrastructure
+        run: docker compose up -d --wait postgres procurement-db redis minio temporal-namespace
+      - name: Migrate databases
+        run: |
+          python scripts/migrate_local.py
+          python scripts/init_procurement.py
+      - name: Lint
+        run: |
+          python -m ruff check .
+          pnpm --dir apps/web lint
+      - name: Type
+        run: |
+          python -m mypy src apps scripts --strict
+          pnpm --dir apps/web typecheck
+      - name: Unit
+        run: python scripts/verify_local.py tests/unit
+      - name: Contract
+        run: |
+          python scripts/export_contracts.py
+          python scripts/export_openapi.py
+          git diff --exit-code -- contracts
+          python scripts/verify_local.py tests/contract
+      - name: Integration
+        run: python scripts/verify_local.py tests/integration
+      - name: Security
+        run: python scripts/verify_local.py tests/security
+      - name: Failure
+        run: python scripts/verify_local.py tests/failure
+      - name: E2E
+        run: python scripts/verify_local.py tests/e2e
+      - name: Evaluation
+        run: python scripts/verify_local.py tests/evaluation
+      - name: Frontend component and production build
+        run: |
+          pnpm --dir apps/web test
+          pnpm --dir apps/web build
+      - name: Playwright browser acceptance
+        run: |
+          pnpm --dir apps/web exec playwright install --with-deps chromium
+          docker compose up -d --build --wait api worker web
+          pnpm --dir apps/web test:e2e
+      - name: Diagnostics
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+      - name: Stop infrastructure
+        if: always()
+        run: docker compose down

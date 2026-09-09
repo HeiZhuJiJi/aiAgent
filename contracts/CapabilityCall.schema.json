@@ -1,0 +1,220 @@
+{
+  "$defs": {
+    "CapabilityRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "command_id": {
+          "format": "uuid",
+          "title": "Command Id",
+          "type": "string"
+        },
+        "operation_id": {
+          "format": "uuid",
+          "title": "Operation Id",
+          "type": "string"
+        },
+        "workspace_id": {
+          "format": "uuid",
+          "title": "Workspace Id",
+          "type": "string"
+        },
+        "task_id": {
+          "format": "uuid",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "step_id": {
+          "format": "uuid",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "attempt_id": {
+          "format": "uuid",
+          "title": "Attempt Id",
+          "type": "string"
+        },
+        "fencing_token": {
+          "exclusiveMinimum": 0,
+          "title": "Fencing Token",
+          "type": "integer"
+        },
+        "capability_id": {
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "capability_version": {
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Arguments",
+          "type": "object"
+        }
+      },
+      "required": [
+        "command_id",
+        "operation_id",
+        "workspace_id",
+        "task_id",
+        "step_id",
+        "attempt_id",
+        "fencing_token",
+        "capability_id",
+        "capability_version",
+        "arguments"
+      ],
+      "title": "CapabilityRequest",
+      "type": "object"
+    },
+    "CapabilityResult": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "operation_id": {
+          "format": "uuid",
+          "title": "Operation Id",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "SUCCEEDED",
+            "FAILED",
+            "UNKNOWN"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Failure"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "operation_id",
+        "outcome",
+        "output"
+      ],
+      "title": "CapabilityResult",
+      "type": "object"
+    },
+    "Failure": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "code": {
+          "$ref": "#/$defs/FailureCode"
+        },
+        "safe_detail": {
+          "title": "Safe Detail",
+          "type": "string"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "safe_detail",
+        "trace_id"
+      ],
+      "title": "Failure",
+      "type": "object"
+    },
+    "FailureCode": {
+      "enum": [
+        "LLM_RATE_LIMIT",
+        "LLM_TIMEOUT",
+        "LLM_SERVER_ERROR",
+        "LLM_SCHEMA_ERROR",
+        "CAPABILITY_TIMEOUT",
+        "CAPABILITY_UNAVAILABLE",
+        "CAPABILITY_BAD_OUTPUT",
+        "CAPABILITY_UNKNOWN_OUTCOME",
+        "MCP_DISCONNECTED",
+        "MCP_SCHEMA_CHANGED",
+        "DB_UNAVAILABLE",
+        "WORKER_CRASH",
+        "CONTEXT_OVERFLOW",
+        "BUDGET_EXCEEDED",
+        "POLICY_DENIED",
+        "APPROVAL_REJECTED",
+        "VALIDATION_FAILED",
+        "STALE_ATTEMPT",
+        "CONSISTENCY_VIOLATION"
+      ],
+      "title": "FailureCode",
+      "type": "string"
+    },
+    "JsonValue": {}
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "call_id": {
+      "format": "uuid",
+      "title": "Call Id",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/CapabilityRequest"
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CapabilityResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "call_id",
+    "request",
+    "created_at"
+  ],
+  "title": "CapabilityCall",
+  "type": "object"
+}

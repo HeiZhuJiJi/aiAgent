@@ -1,0 +1,4 @@
+name: enterprise-agent-work-platform
+
+include:
+  - path: deploy/compose/infrastructure.yml

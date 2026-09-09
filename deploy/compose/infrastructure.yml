@@ -1,0 +1,277 @@
+name: enterprise-agent-work-platform
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: platform
+    ports:
+    - 127.0.0.1:55432:5432
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U platform -d platform
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  procurement-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: procurement
+      POSTGRES_PASSWORD: ${PROCUREMENT_DB_PASSWORD:?Set PROCUREMENT_DB_PASSWORD in
+        .env}
+      POSTGRES_DB: procurement
+    ports:
+    - 127.0.0.1:55433:5432
+    volumes:
+    - procurement_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U procurement -d procurement
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    ports:
+    - 127.0.0.1:56379:6379
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: platform
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+    - 127.0.0.1:59000:9000
+    - 127.0.0.1:59001:9001
+    volumes:
+    - minio_data:/data
+  temporal-schema:
+    image: temporalio/admin-tools:1.31.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: '5432'
+      POSTGRES_USER: platform
+      POSTGRES_PWD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_SEEDS: postgres
+      SQL_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    volumes:
+    - ./temporal-setup.sh:/scripts/setup.sh:ro
+    entrypoint:
+    - /bin/sh
+    - /scripts/setup.sh
+  temporal:
+    image: temporalio/server:1.31.0
+    depends_on:
+      temporal-schema:
+        condition: service_completed_successfully
+    environment:
+      DB: postgres12
+      DB_PORT: '5432'
+      POSTGRES_USER: platform
+      POSTGRES_PWD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_SEEDS: postgres
+      BIND_ON_IP: 0.0.0.0
+    ports:
+    - 127.0.0.1:57233:7233
+    healthcheck:
+      test:
+      - CMD
+      - nc
+      - -z
+      - localhost
+      - '7233'
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    volumes:
+    - ./temporal-dynamic.yaml:/etc/temporal/config/dynamicconfig/docker.yaml:ro
+  temporal-namespace:
+    image: temporalio/admin-tools:1.31.0
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - >-
+      temporal operator namespace describe --namespace default >/dev/null 2>&1 ||
+      temporal operator namespace create --namespace default --retention 72h
+  platform-migrate:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://platform:${POSTGRES_PASSWORD}@postgres:5432/platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+  procurement-migrate:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment:
+      PROCUREMENT_DATABASE_URL: postgresql+asyncpg://procurement:${PROCUREMENT_DB_PASSWORD}@procurement-db:5432/procurement
+    depends_on:
+      procurement-db:
+        condition: service_healthy
+    command: ["alembic", "-c", "mcp_servers/procurement/alembic.ini", "upgrade", "head"]
+    restart: "no"
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment: &runtime_environment
+      DATABASE_URL: postgresql+asyncpg://platform:${POSTGRES_PASSWORD}@postgres:5432/platform
+      PROCUREMENT_DATABASE_URL: postgresql+asyncpg://procurement:${PROCUREMENT_DB_PASSWORD}@procurement-db:5432/procurement
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_TASK_QUEUE: enterprise-agent-runtime
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: platform
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_SECURE: "false"
+      SECRET_MASTER_KEY: ${SECRET_MASTER_KEY}
+      MODEL_MODE: ${MODEL_MODE:-local}
+      MODEL_BASE_URL: ${MODEL_CONTAINER_BASE_URL:-http://host.docker.internal:8000/v1}
+      MODEL_NAME: ${MODEL_NAME:-Qwen/Qwen3.8-27B}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      EMBEDDING_MODE: ${EMBEDDING_MODE:-local}
+      EMBEDDING_BASE_URL: ${EMBEDDING_CONTAINER_BASE_URL:-http://host.docker.internal:8001/v1}
+      EMBEDDING_NAME: ${EMBEDDING_NAME:-BAAI/bge-m3}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      RERANKER_MODE: ${RERANKER_MODE:-local}
+      RERANKER_BASE_URL: ${RERANKER_CONTAINER_BASE_URL:-http://host.docker.internal:8002/v1}
+      RERANKER_NAME: ${RERANKER_NAME:-BAAI/bge-reranker-v2-m3}
+      RERANKER_API_KEY: ${RERANKER_API_KEY:-}
+      WEB_MODE: ${WEB_MODE:-local}
+      WEB_BASE_URL: ${WEB_CONTAINER_BASE_URL:-http://host.docker.internal:8003/v1}
+      WEB_API_KEY: ${WEB_API_KEY:-}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      OTEL_SERVICE_NAME: enterprise-agent-api
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    depends_on:
+      platform-migrate:
+        condition: service_completed_successfully
+      procurement-migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+    command: ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+    - 127.0.0.1:58080:8080
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  worker:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment:
+      <<: *runtime_environment
+      OTEL_SERVICE_NAME: enterprise-agent-worker
+      WORKER_METRICS_PORT: "9464"
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    depends_on:
+      platform-migrate:
+        condition: service_completed_successfully
+      procurement-migrate:
+        condition: service_completed_successfully
+      temporal-namespace:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+      redis:
+        condition: service_started
+    command: ["python", "-m", "apps.worker.main"]
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/web.Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+    - 127.0.0.1:55173:8080
+    restart: unless-stopped
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.137.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+    - ../../observability/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+    - tempo
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:v3.7.1
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+    - ../../observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - prometheus_data:/prometheus
+    ports:
+    - 127.0.0.1:59090:9090
+    restart: unless-stopped
+  tempo:
+    image: grafana/tempo:2.9.0
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+    - ../../observability/tempo.yaml:/etc/tempo.yaml:ro
+    - tempo_data:/var/tempo
+    restart: unless-stopped
+  loki:
+    image: grafana/loki:3.5.7
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+    - ../../observability/loki.yaml:/etc/loki/local-config.yaml:ro
+    - loki_data:/loki
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:12.2.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+    - ../../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    - ../../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+    - prometheus
+    - tempo
+    - loki
+    ports:
+    - 127.0.0.1:53000:3000
+    restart: unless-stopped
+volumes:
+  postgres_data: null
+  procurement_data: null
+  minio_data: null
+  prometheus_data: null
+  tempo_data: null
+  loki_data: null
+  grafana_data: null

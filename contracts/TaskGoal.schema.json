@@ -1,0 +1,79 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "goal": {
+      "minLength": 1,
+      "title": "Goal",
+      "type": "string"
+    },
+    "constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "deliverables": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Deliverables",
+      "type": "array"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "time_budget_sec": {
+      "exclusiveMinimum": 0,
+      "title": "Time Budget Sec",
+      "type": "integer"
+    },
+    "token_budget": {
+      "exclusiveMinimum": 0,
+      "title": "Token Budget",
+      "type": "integer"
+    },
+    "cost_budget": {
+      "minimum": 0,
+      "title": "Cost Budget",
+      "type": "number"
+    },
+    "requested_skill": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requested Skill"
+    },
+    "user_context": {
+      "default": "",
+      "title": "User Context",
+      "type": "string"
+    }
+  },
+  "required": [
+    "goal",
+    "constraints",
+    "deliverables",
+    "workspace_id",
+    "time_budget_sec",
+    "token_budget",
+    "cost_budget"
+  ],
+  "title": "TaskGoal",
+  "type": "object"
+}

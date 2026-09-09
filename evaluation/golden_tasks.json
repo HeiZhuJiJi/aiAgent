@@ -1,0 +1,2108 @@
+[
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-01-answer-an-effective-date-policy-question-with-a-page-citation",
+    "category": "KNOWLEDGE_QA",
+    "title": "Answer an effective-date policy question with a page citation",
+    "objective": "Answer an effective-date policy question with a page citation. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Answer an effective-date policy question with a page citation",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-02-resolve-conflicting-document-versions-using-the-latest-immutable-versi",
+    "category": "KNOWLEDGE_QA",
+    "title": "Resolve conflicting document versions using the latest immutable version",
+    "objective": "Resolve conflicting document versions using the latest immutable version. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Resolve conflicting document versions using the latest immutable version",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-03-return-unknown-when-the-knowledge-base-lacks-the-requested-fact",
+    "category": "KNOWLEDGE_QA",
+    "title": "Return unknown when the knowledge base lacks the requested fact",
+    "objective": "Return unknown when the knowledge base lacks the requested fact. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Return unknown when the knowledge base lacks the requested fact",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-04-cite-a-spreadsheet-row-and-stable-document-version",
+    "category": "KNOWLEDGE_QA",
+    "title": "Cite a spreadsheet row and stable document version",
+    "objective": "Cite a spreadsheet row and stable document version. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Cite a spreadsheet row and stable document version",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-05-combine-two-internal-policy-passages-without-losing-provenance",
+    "category": "KNOWLEDGE_QA",
+    "title": "Combine two internal policy passages without losing provenance",
+    "objective": "Combine two internal policy passages without losing provenance. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Combine two internal policy passages without losing provenance",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "knowledge-qa-06-reject-a-retrieved-passage-whose-stored-content-hash-no-longer-matches",
+    "category": "KNOWLEDGE_QA",
+    "title": "Reject a retrieved passage whose stored content hash no longer matches",
+    "objective": "Reject a retrieved passage whose stored content hash no longer matches. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a retrieved passage whose stored content hash no longer matches",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "knowledge_qa",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-01-combine-internal-policy-supplier-history-and-public-registry-evidence",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Combine internal policy, supplier history, and public registry evidence",
+    "objective": "Combine internal policy, supplier history, and public registry evidence. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Combine internal policy, supplier history, and public registry evidence",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-02-research-sanctions-and-litigation-while-retaining-url-and-retrieval-ti",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Research sanctions and litigation while retaining URL and retrieval time",
+    "objective": "Research sanctions and litigation while retaining URL and retrieval time. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Research sanctions and litigation while retaining URL and retrieval time",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-03-separate-verified-facts-from-untrusted-public-allegations",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Separate verified facts from untrusted public allegations",
+    "objective": "Separate verified facts from untrusted public allegations. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Separate verified facts from untrusted public allegations",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-04-synthesize-parallel-research-branches-into-cited-findings",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Synthesize parallel research branches into cited findings",
+    "objective": "Synthesize parallel research branches into cited findings. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Synthesize parallel research branches into cited findings",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-05-identify-evidence-conflicts-and-preserve-both-source-identities",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Identify evidence conflicts and preserve both source identities",
+    "objective": "Identify evidence conflicts and preserve both source identities. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Identify evidence conflicts and preserve both source identities",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "complex-research-06-complete-bounded-research-without-exceeding-the-task-budget",
+    "category": "COMPLEX_RESEARCH",
+    "title": "Complete bounded research without exceeding the task budget",
+    "objective": "Complete bounded research without exceeding the task budget. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Complete bounded research without exceeding the task budget",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "knowledge.hybrid_search",
+        "web.search"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "complex_research",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-01-install-and-execute-the-signed-supplier-risk-skill-version",
+    "category": "SKILL",
+    "title": "Install and execute the signed supplier-risk skill version",
+    "objective": "Install and execute the signed supplier-risk skill version. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Install and execute the signed supplier-risk skill version",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-02-reject-a-skill-archive-with-path-traversal",
+    "category": "SKILL",
+    "title": "Reject a skill archive with path traversal",
+    "objective": "Reject a skill archive with path traversal. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a skill archive with path traversal",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-03-require-confirmation-when-a-new-skill-version-expands-permissions",
+    "category": "SKILL",
+    "title": "Require confirmation when a new skill version expands permissions",
+    "objective": "Require confirmation when a new skill version expands permissions. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Require confirmation when a new skill version expands permissions",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-04-keep-an-existing-task-pinned-to-its-installed-skill-snapshot",
+    "category": "SKILL",
+    "title": "Keep an existing task pinned to its installed skill snapshot",
+    "objective": "Keep an existing task pinned to its installed skill snapshot. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Keep an existing task pinned to its installed skill snapshot",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-05-disable-a-skill-for-new-tasks-while-an-older-task-remains-reproducible",
+    "category": "SKILL",
+    "title": "Disable a skill for new tasks while an older task remains reproducible",
+    "objective": "Disable a skill for new tasks while an older task remains reproducible. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Disable a skill for new tasks while an older task remains reproducible",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "skill-06-reject-a-skill-whose-workflow-references-an-undeclared-capability",
+    "category": "SKILL",
+    "title": "Reject a skill whose workflow references an undeclared capability",
+    "objective": "Reject a skill whose workflow references an undeclared capability. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a skill whose workflow references an undeclared capability",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "skill",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-01-discover-and-call-the-procurement-supplier-profile-tool",
+    "category": "MCP",
+    "title": "Discover and call the procurement supplier profile tool",
+    "objective": "Discover and call the procurement supplier profile tool. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Discover and call the procurement supplier profile tool",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-02-read-purchase-history-through-the-independently-persisted-mcp-service",
+    "category": "MCP",
+    "title": "Read purchase history through the independently persisted MCP service",
+    "objective": "Read purchase history through the independently persisted MCP service. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Read purchase history through the independently persisted MCP service",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-03-detect-a-changed-mcp-schema-hash-before-dispatch",
+    "category": "MCP",
+    "title": "Detect a changed MCP schema hash before dispatch",
+    "objective": "Detect a changed MCP schema hash before dispatch. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Detect a changed MCP schema hash before dispatch",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-04-reconnect-an-unhealthy-procurement-mcp-registration",
+    "category": "MCP",
+    "title": "Reconnect an unhealthy procurement MCP registration",
+    "objective": "Reconnect an unhealthy procurement MCP registration. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reconnect an unhealthy procurement MCP registration",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-05-reject-an-mcp-response-with-an-invalid-output-schema",
+    "category": "MCP",
+    "title": "Reject an MCP response with an invalid output schema",
+    "objective": "Reject an MCP response with an invalid output schema. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject an MCP response with an invalid output schema",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "mcp-06-keep-mcp-output-as-evidence-without-granting-new-permission",
+    "category": "MCP",
+    "title": "Keep MCP output as evidence without granting new permission",
+    "objective": "Keep MCP output as evidence without granting new permission. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Keep MCP output as evidence without granting new permission",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.get_supplier_profile"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "mcp",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-01-create-a-valid-supplier-risk-dag-with-four-parallel-research-roots",
+    "category": "PLANNER",
+    "title": "Create a valid supplier-risk DAG with four parallel research roots",
+    "objective": "Create a valid supplier-risk DAG with four parallel research roots. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Create a valid supplier-risk DAG with four parallel research roots",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-02-reject-a-plan-containing-an-unknown-dependency",
+    "category": "PLANNER",
+    "title": "Reject a plan containing an unknown dependency",
+    "objective": "Reject a plan containing an unknown dependency. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a plan containing an unknown dependency",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-03-reject-a-cyclic-plan-before-any-step-dispatch",
+    "category": "PLANNER",
+    "title": "Reject a cyclic plan before any step dispatch",
+    "objective": "Reject a cyclic plan before any step dispatch. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a cyclic plan before any step dispatch",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-04-pin-every-capability-version-to-the-execution-snapshot",
+    "category": "PLANNER",
+    "title": "Pin every capability version to the execution snapshot",
+    "objective": "Pin every capability version to the execution snapshot. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Pin every capability version to the execution snapshot",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-05-schedule-nonparallel-review-after-all-evidence-dependencies",
+    "category": "PLANNER",
+    "title": "Schedule nonparallel review after all evidence dependencies",
+    "objective": "Schedule nonparallel review after all evidence dependencies. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Schedule nonparallel review after all evidence dependencies",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "planner-06-keep-external-side-effects-after-report-and-policy-review",
+    "category": "PLANNER",
+    "title": "Keep external side effects after report and policy review",
+    "objective": "Keep external side effects after report and policy review. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Keep external side effects after report and policy review",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "planner",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-supplier-c-evidence-gap",
+    "category": "REPLAN",
+    "title": "Expand the plan after Supplier C evidence insufficiency",
+    "objective": "Expand the plan after Supplier C evidence insufficiency. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Expand the plan after Supplier C evidence insufficiency",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-02-retry-a-failed-read-capability-within-the-frozen-capability-set",
+    "category": "REPLAN",
+    "title": "Retry a failed read capability within the frozen capability set",
+    "objective": "Retry a failed read capability within the frozen capability set. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Retry a failed read capability within the frozen capability set",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-03-replace-a-failed-step-while-preserving-completed-evidence-steps",
+    "category": "REPLAN",
+    "title": "Replace a failed step while preserving completed evidence steps",
+    "objective": "Replace a failed step while preserving completed evidence steps. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Replace a failed step while preserving completed evidence steps",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-04-abort-when-a-proposed-replan-escalates-permissions",
+    "category": "REPLAN",
+    "title": "Abort when a proposed Replan escalates permissions",
+    "objective": "Abort when a proposed Replan escalates permissions. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Abort when a proposed Replan escalates permissions",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-05-stop-after-the-consecutive-replan-loop-limit",
+    "category": "REPLAN",
+    "title": "Stop after the consecutive Replan loop limit",
+    "objective": "Stop after the consecutive Replan loop limit. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Stop after the consecutive Replan loop limit",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "replan-06-retain-immutable-plan-v1-and-append-plan-v2",
+    "category": "REPLAN",
+    "title": "Retain immutable Plan v1 and append Plan v2",
+    "objective": "Retain immutable Plan v1 and append Plan v2. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Retain immutable Plan v1 and append Plan v2",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": true,
+      "expected_decision": null,
+      "expected_replan": true,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "replan",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-01-deny-a-member-attempting-an-administrator-only-action",
+    "category": "PERMISSION",
+    "title": "Deny a member attempting an administrator-only action",
+    "objective": "Deny a member attempting an administrator-only action. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Deny a member attempting an administrator-only action",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-02-deny-cross-workspace-task-access",
+    "category": "PERMISSION",
+    "title": "Deny cross-workspace task access",
+    "objective": "Deny cross-workspace task access. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Deny cross-workspace task access",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-03-deny-confidential-data-egress-to-an-external-model",
+    "category": "PERMISSION",
+    "title": "Deny confidential data egress to an external model",
+    "objective": "Deny confidential data egress to an external model. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Deny confidential data egress to an external model",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-04-deny-a-capability-absent-from-the-execution-snapshot-allowlist",
+    "category": "PERMISSION",
+    "title": "Deny a capability absent from the execution snapshot allowlist",
+    "objective": "Deny a capability absent from the execution snapshot allowlist. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Deny a capability absent from the execution snapshot allowlist",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-05-allow-an-auditor-to-read-audit-history-without-mutation-rights",
+    "category": "PERMISSION",
+    "title": "Allow an auditor to read audit history without mutation rights",
+    "objective": "Allow an auditor to read audit history without mutation rights. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Allow an auditor to read audit history without mutation rights",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "permission-06-treat-document-prompt-injection-as-data-without-permission-escalation",
+    "category": "PERMISSION",
+    "title": "Treat document prompt injection as data without permission escalation",
+    "objective": "Treat document prompt injection as data without permission escalation. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Treat document prompt injection as data without permission escalation",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "permission",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-supplier-a-admission",
+    "category": "HITL",
+    "title": "Pause Supplier A admission on a parameter-bound approval",
+    "objective": "Pause Supplier A admission on a parameter-bound approval. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Pause Supplier A admission on a parameter-bound approval",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": "ADMIT",
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-02-reject-approval-replay-after-its-immutable-terminal-decision",
+    "category": "HITL",
+    "title": "Reject approval replay after its immutable terminal decision",
+    "objective": "Reject approval replay after its immutable terminal decision. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject approval replay after its immutable terminal decision",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-03-expire-an-approval-using-the-database-clock",
+    "category": "HITL",
+    "title": "Expire an approval using the database clock",
+    "objective": "Expire an approval using the database clock. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Expire an approval using the database clock",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-04-deny-approval-by-a-nonadministrator-workspace-member",
+    "category": "HITL",
+    "title": "Deny approval by a nonadministrator workspace member",
+    "objective": "Deny approval by a nonadministrator workspace member. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Deny approval by a nonadministrator workspace member",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-05-bind-approval-evidence-ids-and-policy-version-before-dispatch",
+    "category": "HITL",
+    "title": "Bind approval evidence IDs and policy version before dispatch",
+    "objective": "Bind approval evidence IDs and policy version before dispatch. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Bind approval evidence IDs and policy version before dispatch",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "hitl-06-resume-the-exact-operation-after-an-approved-temporal-signal",
+    "category": "HITL",
+    "title": "Resume the exact operation after an approved Temporal signal",
+    "objective": "Resume the exact operation after an approved Temporal signal. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Resume the exact operation after an approved Temporal signal",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": true,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "hitl",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-01-classify-and-repair-a-corrupted-structured-model-response",
+    "category": "FAILURE",
+    "title": "Classify and repair a corrupted structured model response",
+    "objective": "Classify and repair a corrupted structured model response. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Classify and repair a corrupted structured model response",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-02-classify-an-llm-timeout-and-apply-the-bounded-retry-matrix",
+    "category": "FAILURE",
+    "title": "Classify an LLM timeout and apply the bounded retry matrix",
+    "objective": "Classify an LLM timeout and apply the bounded retry matrix. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Classify an LLM timeout and apply the bounded retry matrix",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-03-honor-retry-after-behavior-for-an-llm-429-response",
+    "category": "FAILURE",
+    "title": "Honor Retry-After behavior for an LLM 429 response",
+    "objective": "Honor Retry-After behavior for an LLM 429 response. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Honor Retry-After behavior for an LLM 429 response",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-04-classify-an-mcp-disconnect-without-fabricating-evidence",
+    "category": "FAILURE",
+    "title": "Classify an MCP disconnect without fabricating evidence",
+    "objective": "Classify an MCP disconnect without fabricating evidence. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Classify an MCP disconnect without fabricating evidence",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-05-reject-a-context-bundle-that-exceeds-its-token-ceiling",
+    "category": "FAILURE",
+    "title": "Reject a context bundle that exceeds its token ceiling",
+    "objective": "Reject a context bundle that exceeds its token ceiling. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a context bundle that exceeds its token ceiling",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "failure-06-surface-database-unavailability-as-a-safe-typed-failure",
+    "category": "FAILURE",
+    "title": "Surface database unavailability as a safe typed failure",
+    "objective": "Surface database unavailability as a safe typed failure. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Surface database unavailability as a safe typed failure",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "model.structured_output"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "failure",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-01-resume-after-killing-the-independent-temporal-worker-process",
+    "category": "RECOVERY",
+    "title": "Resume after killing the independent Temporal Worker process",
+    "objective": "Resume after killing the independent Temporal Worker process. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Resume after killing the independent Temporal Worker process",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-02-reconcile-an-unknown-side-effect-after-response-loss",
+    "category": "RECOVERY",
+    "title": "Reconcile an UNKNOWN side effect after response loss",
+    "objective": "Reconcile an UNKNOWN side effect after response loss. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reconcile an UNKNOWN side effect after response loss",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-03-reject-a-zombie-worker-result-with-a-stale-fencing-token",
+    "category": "RECOVERY",
+    "title": "Reject a zombie Worker result with a stale fencing token",
+    "objective": "Reject a zombie Worker result with a stale fencing token. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject a zombie Worker result with a stale fencing token",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-04-replay-a-native-idempotent-dispatch-with-the-same-dispatch-identity",
+    "category": "RECOVERY",
+    "title": "Replay a native-idempotent dispatch with the same dispatch identity",
+    "objective": "Replay a native-idempotent dispatch with the same dispatch identity. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Replay a native-idempotent dispatch with the same dispatch identity",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-05-recover-an-expired-outbox-lease-without-duplicate-publication",
+    "category": "RECOVERY",
+    "title": "Recover an expired outbox lease without duplicate publication",
+    "objective": "Recover an expired outbox lease without duplicate publication. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Recover an expired outbox lease without duplicate publication",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "recovery-06-continue-as-new-from-a-postgresql-validated-checkpoint",
+    "category": "RECOVERY",
+    "title": "Continue-As-New from a PostgreSQL-validated checkpoint",
+    "objective": "Continue-As-New from a PostgreSQL-validated checkpoint. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Continue-As-New from a PostgreSQL-validated checkpoint",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "recovery",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-01-create-exactly-one-approved-supplier-a-admission",
+    "category": "SIDE_EFFECT",
+    "title": "Create exactly one approved Supplier A admission",
+    "objective": "Create exactly one approved Supplier A admission. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Create exactly one approved Supplier A admission",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 1
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-supplier-b-noop",
+    "category": "SIDE_EFFECT",
+    "title": "Complete Supplier B with a governed no-op and zero admission writes",
+    "objective": "Complete Supplier B with a governed no-op and zero admission writes. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Complete Supplier B with a governed no-op and zero admission writes",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": "REJECT",
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-03-prevent-duplicate-admission-when-the-provider-response-is-lost",
+    "category": "SIDE_EFFECT",
+    "title": "Prevent duplicate admission when the provider response is lost",
+    "objective": "Prevent duplicate admission when the provider response is lost. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Prevent duplicate admission when the provider response is lost",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-04-reject-dispatch-when-approval-parameters-differ-from-the-operation-has",
+    "category": "SIDE_EFFECT",
+    "title": "Reject dispatch when approval parameters differ from the operation hash",
+    "objective": "Reject dispatch when approval parameters differ from the operation hash. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reject dispatch when approval parameters differ from the operation hash",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-05-reconcile-before-retrying-an-operation-in-unknown-state",
+    "category": "SIDE_EFFECT",
+    "title": "Reconcile before retrying an operation in UNKNOWN state",
+    "objective": "Reconcile before retrying an operation in UNKNOWN state. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Reconcile before retrying an operation in UNKNOWN state",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "side-effect-06-fence-the-authoritative-outcome-commit-to-the-owning-attempt",
+    "category": "SIDE_EFFECT",
+    "title": "Fence the authoritative outcome commit to the owning attempt",
+    "objective": "Fence the authoritative outcome commit to the owning attempt. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Fence the authoritative outcome commit to the owning attempt",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [
+        "procurement.create_supplier_admission_request"
+      ],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "side_effect",
+      "golden",
+      "case-06"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-01-prioritize-platform-policy-over-untrusted-document-instructions",
+    "category": "CONTEXT",
+    "title": "Prioritize platform policy over untrusted document instructions",
+    "objective": "Prioritize platform policy over untrusted document instructions. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Prioritize platform policy over untrusted document instructions",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 1
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-01"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-02-fit-relevant-evidence-inside-a-deterministic-token-budget",
+    "category": "CONTEXT",
+    "title": "Fit relevant evidence inside a deterministic token budget",
+    "objective": "Fit relevant evidence inside a deterministic token budget. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Fit relevant evidence inside a deterministic token budget",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 2
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-02"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-03-exclude-low-priority-context-while-recording-the-exclusion-reason",
+    "category": "CONTEXT",
+    "title": "Exclude low-priority context while recording the exclusion reason",
+    "objective": "Exclude low-priority context while recording the exclusion reason. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Exclude low-priority context while recording the exclusion reason",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 3
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-03"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-04-preserve-trust-labels-across-web-mcp-user-and-platform-context",
+    "category": "CONTEXT",
+    "title": "Preserve trust labels across web, MCP, user, and platform context",
+    "objective": "Preserve trust labels across web, MCP, user, and platform context. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Preserve trust labels across web, MCP, user, and platform context",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 4
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-05-summarize-a-conversation-without-changing-immutable-task-evidence",
+    "category": "CONTEXT",
+    "title": "Summarize a conversation without changing immutable task evidence",
+    "objective": "Summarize a conversation without changing immutable task evidence. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Summarize a conversation without changing immutable task evidence",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 5
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "case_id": "context-06-use-project-memory-only-when-its-source-and-version-remain-valid",
+    "category": "CONTEXT",
+    "title": "Use project memory only when its source and version remain valid",
+    "objective": "Use project memory only when its source and version remain valid. Verify the canonical PostgreSQL state, audit trail, and typed outcome.",
+    "input": {
+      "scenario": "Use project memory only when its source and version remain valid",
+      "workspace_fixture": "isolated-evaluation-workspace",
+      "deterministic_seed": 6
+    },
+    "expected": {
+      "schema_version": 1,
+      "task_success": true,
+      "plan_valid": true,
+      "capability_ids": [],
+      "citation_required": false,
+      "expected_decision": null,
+      "expected_replan": false,
+      "expected_hitl": false,
+      "expected_side_effect_count": 0
+    },
+    "tags": [
+      "context",
+      "golden",
+      "case-06"
+    ]
+  }
+]

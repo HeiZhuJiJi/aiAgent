@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "FailureCode": {
+      "enum": [
+        "LLM_RATE_LIMIT",
+        "LLM_TIMEOUT",
+        "LLM_SERVER_ERROR",
+        "LLM_SCHEMA_ERROR",
+        "CAPABILITY_TIMEOUT",
+        "CAPABILITY_UNAVAILABLE",
+        "CAPABILITY_BAD_OUTPUT",
+        "CAPABILITY_UNKNOWN_OUTCOME",
+        "MCP_DISCONNECTED",
+        "MCP_SCHEMA_CHANGED",
+        "DB_UNAVAILABLE",
+        "WORKER_CRASH",
+        "CONTEXT_OVERFLOW",
+        "BUDGET_EXCEEDED",
+        "POLICY_DENIED",
+        "APPROVAL_REJECTED",
+        "VALIDATION_FAILED",
+        "STALE_ATTEMPT",
+        "CONSISTENCY_VIOLATION"
+      ],
+      "title": "FailureCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "code": {
+      "$ref": "#/$defs/FailureCode"
+    },
+    "safe_detail": {
+      "title": "Safe Detail",
+      "type": "string"
+    },
+    "trace_id": {
+      "title": "Trace Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "safe_detail",
+    "trace_id"
+  ],
+  "title": "Failure",
+  "type": "object"
+}

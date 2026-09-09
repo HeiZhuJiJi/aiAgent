@@ -1,0 +1,1 @@
+"""Declarative extension validation."""
