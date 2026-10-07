@@ -1,0 +1,211 @@
+{
+  "$defs": {
+    "VerificationGates": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "entity_match": {
+          "title": "Entity Match",
+          "type": "boolean"
+        },
+        "temporal_match": {
+          "title": "Temporal Match",
+          "type": "boolean"
+        },
+        "evidence_support": {
+          "title": "Evidence Support",
+          "type": "boolean"
+        },
+        "authorization": {
+          "title": "Authorization",
+          "type": "boolean"
+        },
+        "operation_certainty": {
+          "enum": [
+            "CERTAIN",
+            "UNKNOWN",
+            "CONFLICTING"
+          ],
+          "title": "Operation Certainty",
+          "type": "string"
+        },
+        "schema_validity": {
+          "title": "Schema Validity",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "entity_match",
+        "temporal_match",
+        "evidence_support",
+        "authorization",
+        "operation_certainty",
+        "schema_validity"
+      ],
+      "title": "VerificationGates",
+      "type": "object"
+    },
+    "VerificationMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "completeness": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Completeness",
+          "type": "number"
+        },
+        "freshness": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Freshness",
+          "type": "number"
+        },
+        "source_quality": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Source Quality",
+          "type": "number"
+        },
+        "relevance": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Relevance",
+          "type": "number"
+        },
+        "redundancy": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Redundancy",
+          "type": "number"
+        }
+      },
+      "required": [
+        "completeness",
+        "freshness",
+        "source_quality",
+        "relevance",
+        "redundancy"
+      ],
+      "title": "VerificationMetrics",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "claim_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Claim Ids",
+      "type": "array"
+    },
+    "evidence_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "gates": {
+      "$ref": "#/$defs/VerificationGates"
+    },
+    "metrics": {
+      "$ref": "#/$defs/VerificationMetrics"
+    },
+    "verifier_version": {
+      "minLength": 1,
+      "title": "Verifier Version",
+      "type": "string"
+    },
+    "policy_version": {
+      "minLength": 1,
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "input_snapshot_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Input Snapshot Hash",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "attempt_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attempt Id"
+    },
+    "fencing_token": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fencing Token"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "gates",
+    "metrics",
+    "verifier_version",
+    "policy_version",
+    "input_snapshot_hash",
+    "created_at"
+  ],
+  "title": "VerificationResult",
+  "type": "object"
+}

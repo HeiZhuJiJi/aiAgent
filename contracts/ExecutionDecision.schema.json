@@ -1,0 +1,121 @@
+{
+  "$defs": {
+    "AgentExecutionLevel": {
+      "enum": [
+        "INLINE_CHAT",
+        "BOUNDED_QA",
+        "DURABLE_TASK"
+      ],
+      "title": "AgentExecutionLevel",
+      "type": "string"
+    },
+    "AgentInformationSource": {
+      "enum": [
+        "MODEL",
+        "WEB",
+        "RAG",
+        "STRUCTURED_DATA"
+      ],
+      "title": "AgentInformationSource",
+      "type": "string"
+    },
+    "AgentSourcePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "required_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Required Sources",
+          "type": "array"
+        },
+        "preferred_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Preferred Sources",
+          "type": "array"
+        },
+        "fallback_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Fallback Sources",
+          "type": "array"
+        },
+        "forbidden_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Forbidden Sources",
+          "type": "array"
+        }
+      },
+      "title": "AgentSourcePlan",
+      "type": "object"
+    },
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "execution_level": {
+      "$ref": "#/$defs/AgentExecutionLevel"
+    },
+    "source_plan": {
+      "$ref": "#/$defs/AgentSourcePlan"
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk"
+    },
+    "maximum_tool_steps": {
+      "maximum": 8,
+      "minimum": 0,
+      "title": "Maximum Tool Steps",
+      "type": "integer"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    }
+  },
+  "required": [
+    "execution_level",
+    "source_plan",
+    "risk",
+    "maximum_tool_steps",
+    "confidence"
+  ],
+  "title": "ExecutionDecision",
+  "type": "object"
+}

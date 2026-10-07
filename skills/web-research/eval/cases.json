@@ -1,0 +1,61 @@
+[
+  {
+    "case_id": "narrow-current-fact",
+    "query": "今天广州黄埔天气怎么样？",
+    "requires_live_web": true,
+    "minimum_sources": 1,
+    "required_constraints": ["广州黄埔", "absolute_date", "weather_values"]
+  },
+  {
+    "case_id": "historical-relative-date",
+    "query": "上周五东莞的天气怎么样？",
+    "requires_live_web": true,
+    "minimum_sources": 1,
+    "required_constraints": ["东莞", "resolved_absolute_date", "historical_observation"]
+  },
+  {
+    "case_id": "future-range",
+    "query": "未来一周广州黄埔的天气怎么样？",
+    "requires_live_web": true,
+    "minimum_sources": 1,
+    "required_constraints": ["广州黄埔", "resolved_date_range", "daily_forecast"]
+  },
+  {
+    "case_id": "annual-statistic",
+    "query": "2024年广东省年降水量是多少？",
+    "requires_live_web": true,
+    "minimum_sources": 1,
+    "required_constraints": ["广东省", "2024", "annual_precipitation", "definition"]
+  },
+  {
+    "case_id": "current-entity-update",
+    "query": "特朗普最近有什么新动态？",
+    "requires_live_web": true,
+    "minimum_sources": 2,
+    "required_constraints": ["Donald Trump", "recent_events", "event_dates"]
+  },
+  {
+    "case_id": "official-policy",
+    "query": "广东2026年有哪些人工智能政策文件？",
+    "requires_live_web": true,
+    "minimum_sources": 2,
+    "required_constraints": ["广东", "2026", "artificial_intelligence", "policy"]
+  },
+  {
+    "case_id": "missing-essential-slot",
+    "query": "未来一周天气怎么样？",
+    "requires_live_web": false,
+    "expected_outcome": "NEEDS_CLARIFICATION"
+  },
+  {
+    "case_id": "direct-greeting",
+    "query": "晚上好",
+    "requires_live_web": false,
+    "expected_route": "DIRECT"
+  },
+  {
+    "case_id": "provider-unavailable",
+    "query": "搜索当前信息。",
+    "expected_failure": "CAPABILITY_UNAVAILABLE"
+  }
+]

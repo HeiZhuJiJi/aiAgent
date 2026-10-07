@@ -67,6 +67,8 @@ class FlagshipProvider(BaseHTTPRequestHandler):
                         "title": type(self).supplier_label + " public screening",
                         "url": "https://example.test/suppliers/a",
                         "snippet": snippet,
+                        "published_at": None,
+                        "observed_at": "2026-09-12T00:00:00Z",
                         "content_hash": hashlib.sha256(snippet.encode()).hexdigest(),
                     }
                 ]
@@ -487,7 +489,16 @@ async def test_supplier_full_temporal_evidence_report_and_conditional_admission(
                 )
                 assert approval_event is not None
             else:
-                result = await asyncio.wait_for(handle.result(), timeout=90)
+                try:
+                    result = await asyncio.wait_for(handle.result(), timeout=90)
+                except TimeoutError:
+                    if worker is not None and worker.poll() is not None:
+                        _, error = worker.communicate(timeout=1)
+                        raise AssertionError(
+                            "flagship Worker exited: "
+                            + error.decode(errors="replace")[-8000:]
+                        ) from None
+                    raise
                 approvals = (
                     await client.get(
                         "/approvals",

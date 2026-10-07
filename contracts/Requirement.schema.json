@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "RequirementType": {
+      "enum": [
+        "READ",
+        "ANALYSIS",
+        "WRITE",
+        "VERIFICATION"
+      ],
+      "title": "RequirementType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "contract_version_id": {
+      "format": "uuid",
+      "title": "Contract Version Id",
+      "type": "string"
+    },
+    "key": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Key",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/RequirementType"
+    },
+    "mandatory": {
+      "title": "Mandatory",
+      "type": "boolean"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "completion_rule": {
+      "minLength": 1,
+      "title": "Completion Rule",
+      "type": "string"
+    },
+    "entity_scope": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Entity Scope",
+      "type": "array"
+    },
+    "temporal_scope": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Temporal Scope",
+      "type": "array"
+    },
+    "freshness_policy": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "default": {},
+      "title": "Freshness Policy",
+      "type": "object"
+    },
+    "evidence_policy": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "default": {},
+      "title": "Evidence Policy",
+      "type": "object"
+    },
+    "delivery_policy": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "default": {},
+      "title": "Delivery Policy",
+      "type": "object"
+    },
+    "legacy": {
+      "default": false,
+      "title": "Legacy",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "contract_version_id",
+    "key",
+    "type",
+    "mandatory",
+    "description",
+    "completion_rule"
+  ],
+  "title": "Requirement",
+  "type": "object"
+}

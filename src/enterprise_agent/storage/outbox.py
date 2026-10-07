@@ -1,10 +1,11 @@
 import hashlib
 import json
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from uuid import UUID
 
 from pydantic import JsonValue
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -77,9 +78,17 @@ async def claim_next(
     worker_id: str,
     lease_seconds: int = 30,
     workspace_id: UUID | None = None,
+    after_workspace_id: UUID | None = None,
+    allowed_task_queues: Sequence[str] | None = None,
 ) -> OutboxLease | None:
     if not worker_id or lease_seconds <= 0:
         raise DomainError(FailureCode.VALIDATION_FAILED, "invalid outbox lease request")
+    # Serialize claims for one workspace so concurrent selectors cannot observe
+    # an empty candidate set while earlier lease updates are still committing.
+    lock_scope = "global" if workspace_id is None else str(workspace_id)
+    await session.execute(
+        select(func.pg_advisory_xact_lock(func.hashtextextended(lock_scope, 0)))
+    )
     now = await session.scalar(select(func.clock_timestamp()))
     if now is None:
         raise DomainError(FailureCode.DB_UNAVAILABLE, "database clock unavailable")
@@ -95,10 +104,46 @@ async def claim_next(
     )
     if workspace_id is not None:
         query = query.where(OutboxEventRow.workspace_id == workspace_id)
+    if allowed_task_queues is not None:
+        queue_bound_events = OutboxEventRow.event_type.in_(
+            ("task.execution.requested", "knowledge.ingestion.requested")
+        )
+        unbound_events = OutboxEventRow.event_type.in_(
+            ("approval.decided", "task.control.requested")
+        )
+        query = query.where(
+            or_(
+                unbound_events,
+                and_(
+                    queue_bound_events,
+                    OutboxEventRow.payload["task_queue"].astext.in_(allowed_task_queues),
+                ),
+            )
+        )
+    ordering: tuple[object, ...]
+    if workspace_id is None and after_workspace_id is not None:
+        ordering = (
+            case((OutboxEventRow.workspace_id > after_workspace_id, 0), else_=1),
+            OutboxEventRow.workspace_id,
+            OutboxEventRow.available_at,
+            OutboxEventRow.created_at,
+            OutboxEventRow.id,
+        )
+    elif workspace_id is None:
+        ordering = (
+            OutboxEventRow.workspace_id,
+            OutboxEventRow.available_at,
+            OutboxEventRow.created_at,
+            OutboxEventRow.id,
+        )
+    else:
+        ordering = (
+            OutboxEventRow.available_at,
+            OutboxEventRow.created_at,
+            OutboxEventRow.id,
+        )
     row = await session.scalar(
-        query.order_by(OutboxEventRow.available_at, OutboxEventRow.created_at, OutboxEventRow.id)
-        .limit(1)
-        .with_for_update(skip_locked=True)
+        query.order_by(*ordering).limit(1).with_for_update(skip_locked=True)
     )
     if row is None:
         return None

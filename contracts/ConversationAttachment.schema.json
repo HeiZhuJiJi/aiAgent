@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "description": "Presentation-safe reference to the document bound to one user Turn.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "ingestion_id": {
+      "format": "uuid",
+      "title": "Ingestion Id",
+      "type": "string"
+    },
+    "document_version_id": {
+      "format": "uuid",
+      "title": "Document Version Id",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "media_type": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Media Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ingestion_id",
+    "document_version_id",
+    "name",
+    "media_type"
+  ],
+  "title": "ConversationAttachment",
+  "type": "object"
+}

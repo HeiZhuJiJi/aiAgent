@@ -64,6 +64,17 @@
       ],
       "title": "Document Version Id"
     },
+    "document_version": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Document Version"
+    },
     "safe_error": {
       "anyOf": [
         {
@@ -104,6 +115,7 @@
     "state",
     "version",
     "document_version_id",
+    "document_version",
     "safe_error",
     "created_at",
     "completed_at"

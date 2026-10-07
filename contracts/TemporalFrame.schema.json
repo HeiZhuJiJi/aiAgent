@@ -1,0 +1,70 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "direction": {
+      "enum": [
+        "STABLE",
+        "CURRENT",
+        "HISTORICAL",
+        "FUTURE"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "requires_fresh_information": {
+      "title": "Requires Fresh Information",
+      "type": "boolean"
+    },
+    "expression": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expression"
+    },
+    "start_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Start At"
+    },
+    "end_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "End At"
+    }
+  },
+  "required": [
+    "direction",
+    "requires_fresh_information"
+  ],
+  "title": "TemporalFrame",
+  "type": "object"
+}

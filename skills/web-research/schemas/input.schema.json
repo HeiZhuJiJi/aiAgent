@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["goal", "workspace_id", "requested_skill", "user_context"],
+  "properties": {
+    "goal": {"type": "string", "minLength": 1},
+    "workspace_id": {"type": "string", "format": "uuid"},
+    "requested_skill": {"const": "web-research"},
+    "user_context": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": true
+}

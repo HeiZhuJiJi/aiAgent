@@ -6,7 +6,7 @@ import uvicorn
 from dotenv import dotenv_values
 from sqlalchemy import URL
 
-from enterprise_agent.api import app
+from enterprise_agent.api.app import app
 
 
 def configure() -> None:

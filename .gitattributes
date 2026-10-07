@@ -1,0 +1,2 @@
+deploy/compose/temporal-namespace.sh text eol=lf
+tests/fakes/temporal_namespace.sh text eol=lf

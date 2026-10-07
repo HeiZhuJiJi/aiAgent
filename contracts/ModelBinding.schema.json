@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "config_id": {
+      "format": "uuid",
+      "title": "Config Id",
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "Qwen",
+        "DeepSeek",
+        "OpenAICompatible"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "model_name": {
+      "maxLength": 300,
+      "minLength": 1,
+      "title": "Model Name",
+      "type": "string"
+    },
+    "config_version": {
+      "exclusiveMinimum": 0,
+      "title": "Config Version",
+      "type": "integer"
+    },
+    "selected_by": {
+      "enum": [
+        "USER",
+        "DEFAULT"
+      ],
+      "title": "Selected By",
+      "type": "string"
+    }
+  },
+  "required": [
+    "config_id",
+    "provider",
+    "model_name",
+    "config_version",
+    "selected_by"
+  ],
+  "title": "ModelBinding",
+  "type": "object"
+}

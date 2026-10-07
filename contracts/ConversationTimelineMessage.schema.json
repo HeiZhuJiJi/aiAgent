@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "ConversationAttachment": {
+      "additionalProperties": false,
+      "description": "Presentation-safe reference to the document bound to one user Turn.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "ingestion_id": {
+          "format": "uuid",
+          "title": "Ingestion Id",
+          "type": "string"
+        },
+        "document_version_id": {
+          "format": "uuid",
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "media_type": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Media Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ingestion_id",
+        "document_version_id",
+        "name",
+        "media_type"
+      ],
+      "title": "ConversationAttachment",
+      "type": "object"
+    },
+    "ConversationTurnOutcomeStatus": {
+      "enum": [
+        "ANSWERED",
+        "PARTIALLY_ANSWERED",
+        "CLARIFICATION_REQUIRED",
+        "UNAVAILABLE",
+        "FAILED"
+      ],
+      "title": "ConversationTurnOutcomeStatus",
+      "type": "string"
+    },
+    "ConversationTurnState": {
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "SUPERSEDED"
+      ],
+      "title": "ConversationTurnState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A presentation-only message projection bound to its authoritative Turn.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "message_id": {
+      "format": "uuid",
+      "title": "Message Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "conversation_id": {
+      "format": "uuid",
+      "title": "Conversation Id",
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "SYSTEM",
+        "USER",
+        "ASSISTANT"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "content": {
+      "maxLength": 1000000,
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "turn_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Turn Id"
+    },
+    "turn_state": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConversationTurnState"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "turn_outcome_status": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConversationTurnOutcomeStatus"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "attachment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConversationAttachment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "message_id",
+    "workspace_id",
+    "conversation_id",
+    "role",
+    "content",
+    "created_at"
+  ],
+  "title": "ConversationTimelineMessage",
+  "type": "object"
+}

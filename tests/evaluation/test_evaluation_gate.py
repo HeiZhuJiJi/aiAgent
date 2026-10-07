@@ -2,12 +2,17 @@ import json
 from pathlib import Path
 
 from enterprise_agent.evaluation.contracts import EvaluationMetrics
-from enterprise_agent.evaluation.runner import load_ablation_pairs, load_golden_tasks
+from enterprise_agent.evaluation.runner import (
+    load_ablation_pairs,
+    load_execution_manifest,
+    load_golden_tasks,
+)
 
 
 def test_versioned_evaluation_gate_assets_are_complete_and_truthful() -> None:
     cases = load_golden_tasks(Path("evaluation/golden_tasks.json"))
     pairs = load_ablation_pairs(Path("evaluation/ablations.json"))
+    manifest = load_execution_manifest(Path("evaluation/execution_manifest.json"), cases)
     metrics = EvaluationMetrics.model_validate_json(
         Path("evaluation/baseline_metrics.json").read_text("utf-8")
     )
@@ -30,6 +35,7 @@ def test_versioned_evaluation_gate_assets_are_complete_and_truthful() -> None:
         "CONTEXT",
     }
     assert len(pairs) == 6
+    assert len(manifest.bindings) == 72
     assert metrics.evaluated_cases == sum(
         item["status"] != "NOT_RUN" for item in observations
     )

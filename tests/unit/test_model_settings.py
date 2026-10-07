@@ -1,8 +1,16 @@
+import base64
+import os
 from pathlib import Path
+from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
+from pydantic import SecretStr
 
+from enterprise_agent.contracts.domain import VersionRef
+from enterprise_agent.models.gateway import ModelConfig
 from enterprise_agent.models.settings import load_embedding_settings, load_model_settings
+from enterprise_agent.runtime import activities
 
 
 def test_reads_file_and_masks_key(tmp_path: Path):
@@ -63,13 +71,24 @@ def test_local_loopback_allows_http_and_optional_key(tmp_path: Path):
 def test_local_mode_accepts_docker_host_address(tmp_path: Path):
     path = tmp_path / "local.env"
     path.write_text(
-        "MODEL_MODE=local\n"
-        "MODEL_BASE_URL=http://host.docker.internal:8000/v1\n"
-        "MODEL_NAME=example\n"
+        "MODEL_MODE=local\nMODEL_BASE_URL=http://host.docker.internal:8000/v1\nMODEL_NAME=example\n"
     )
     config, key = load_model_settings(path, environ={})
     assert config.external is False
     assert config.base_url == "http://host.docker.internal:8000/v1"
+    assert key.get_secret_value() == ""
+
+
+def test_local_embedding_accepts_compose_service_address(tmp_path: Path):
+    path = tmp_path / "local.env"
+    path.write_text(
+        "EMBEDDING_MODE=local\n"
+        "EMBEDDING_BASE_URL=http://embedding:80/v1\n"
+        "EMBEDDING_NAME=BAAI/bge-m3\n"
+    )
+    config, key = load_embedding_settings(path, environ={})
+    assert config.external is False
+    assert config.base_url == "http://embedding:80/v1"
     assert key.get_secret_value() == ""
 
 
@@ -102,9 +121,64 @@ def test_embedding_settings_are_independent_from_chat_model(tmp_path: Path):
 def test_embedding_settings_do_not_fall_back_to_chat_model(tmp_path: Path):
     path = tmp_path / "models.env"
     path.write_text(
-        "MODEL_MODE=local\n"
-        "MODEL_BASE_URL=http://127.0.0.1:8000/v1\n"
-        "MODEL_NAME=chat-only\n"
+        "MODEL_MODE=local\nMODEL_BASE_URL=http://127.0.0.1:8000/v1\nMODEL_NAME=chat-only\n"
     )
     with pytest.raises(ValueError, match="EMBEDDING_BASE_URL"):
         load_embedding_settings(path, environ={})
+
+
+async def test_replan_resolves_selected_chat_model_through_frozen_snapshot_loader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspace_id, config_id, snapshot_id = uuid4(), uuid4(), uuid4()
+    selected = ModelConfig(
+        provider="DeepSeek",
+        base_url="https://model.invalid/v1",
+        model="selected-chat-model",
+        external=True,
+        version="workspace-config-3",
+    )
+    key = SecretStr("selected-secret")
+    reference = VersionRef(
+        identifier=f"model.config:{config_id}",
+        version="3:DeepSeek:selected-chat-model",
+        sha256="a" * 64,
+    )
+    seen: list[tuple[object, object, object]] = []
+
+    async def fake_snapshot(_session, loaded_workspace_id, loaded_snapshot_id):
+        assert loaded_workspace_id == workspace_id
+        assert loaded_snapshot_id == snapshot_id
+        return SimpleNamespace(model_config_versions=(reference,))
+
+    async def fake_frozen_chain(
+        _session,
+        loaded_workspace_id,
+        loaded_references,
+        cipher,
+    ):
+        seen.append((loaded_workspace_id, loaded_references, cipher))
+        return ((selected, key),)
+
+    monkeypatch.setattr(activities, "load_snapshot", fake_snapshot)
+    monkeypatch.setattr(
+        activities,
+        "load_frozen_task_model_gateway_chain",
+        fake_frozen_chain,
+    )
+    monkeypatch.setenv(
+        "SECRET_MASTER_KEY",
+        base64.urlsafe_b64encode(os.urandom(32)).decode(),
+    )
+
+    config, secret = await activities._model_settings_for_task(  # type: ignore[arg-type]
+        object(),
+        workspace_id,
+        snapshot_id,
+    )
+
+    assert config == selected
+    assert secret.get_secret_value() == "selected-secret"
+    assert len(seen) == 1
+    assert seen[0][0:2] == (workspace_id, (reference,))
+    assert seen[0][2] is not None

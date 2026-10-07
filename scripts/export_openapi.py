@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from enterprise_agent.api import app
+from enterprise_agent.api.app import app
 
 
 def main() -> None:

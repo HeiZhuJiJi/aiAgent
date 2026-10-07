@@ -1,6 +1,6 @@
 import asyncio
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -228,7 +228,7 @@ async def test_classified_failure_waits_then_stops_at_plan_max_attempts() -> Non
                 trace_id="trace-retry",
             ),
             retryable=True,
-            retry_delay_seconds=0.1,
+            retry_delay_seconds=60,
         )
     assert state.value == "RETRY_WAIT"
     with pytest.raises(DomainError, match="retry is not due"):
@@ -237,7 +237,10 @@ async def test_classified_failure_waits_then_stops_at_plan_max_attempts() -> Non
                 session, workspace_id, step_id, uuid4(), "retry-worker", "trace-retry"
             )
 
-    await asyncio.sleep(0.15)
+    async with sessions.begin() as session:
+        step = await session.get(StepRow, step_id)
+        assert step is not None
+        step.retry_available_at = datetime.now(UTC) - timedelta(seconds=1)
     second_id = uuid4()
     async with sessions.begin() as session:
         second = await acquire_attempt(

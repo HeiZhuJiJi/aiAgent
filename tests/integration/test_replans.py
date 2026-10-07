@@ -19,14 +19,17 @@ from enterprise_agent.contracts.domain import (
     Risk,
     StepState,
     TaskGoal,
+    TaskState,
     VersionRef,
 )
 from enterprise_agent.domain.states import DomainError
+from enterprise_agent.models.settings import load_model_settings
 from enterprise_agent.runtime.activities import (
     generate_and_apply_replan,
     load_plan_execution_state,
 )
 from enterprise_agent.runtime.budgets import new_task_budget
+from enterprise_agent.storage.model_configs import default_model_version_ref
 from enterprise_agent.storage.plans import load_plan_versions, persist_plan, persist_snapshot
 from enterprise_agent.storage.replans import apply_replan, list_replans, select_replan_trigger
 from enterprise_agent.storage.steps import materialize_plan_steps, plan_step_id
@@ -103,7 +106,12 @@ def _step(
     )
 
 
-async def _seed_replan_task(database, *, max_replans: int = 5):
+async def _seed_replan_task(
+    database,
+    *,
+    max_replans: int = 5,
+    model_config_versions: tuple[VersionRef, ...] | None = None,
+):
     workspace_id, task_id, snapshot_id = uuid4(), uuid4(), uuid4()
     goal = TaskGoal(
         goal="assess supplier",
@@ -122,7 +130,7 @@ async def _seed_replan_task(database, *, max_replans: int = 5):
         planner_prompt_version=_ref("planner"),
         router_prompt_version=_ref("router"),
         reviewer_prompt_version=_ref("reviewer"),
-        model_config_versions=(_ref("model"),),
+        model_config_versions=model_config_versions or (_ref("model"),),
         skill_versions=(),
         capability_versions=(_ref("test.read"),),
         policy_version=_ref("policy"),
@@ -353,6 +361,56 @@ async def test_replan_decision_is_immutable_and_divergent_replay_is_rejected(dat
                 await session.execute(statement.where(ReplanDecisionRow.id == applied.replan_id))
 
 
+async def test_consecutive_replans_use_explicit_source_plan_fencing(database):
+    workspace_id, task_id, original = await _seed_replan_task(database)
+    first_decision = _decision("RETRY_STEP")
+    async with database.begin() as session:
+        first = await apply_replan(
+            session,
+            workspace_id,
+            task_id,
+            uuid4(),
+            "trace-first-replan",
+            first_decision,
+            expected_from_plan_id=original.plan_id,
+        )
+    assert first.to_plan_id is not None
+
+    async with database.begin() as session:
+        task = await session.get(TaskRow, task_id)
+        failed = await session.get(StepRow, plan_step_id(first.to_plan_id, "analyze"))
+        assert task is not None and failed is not None
+        task.state = TaskState.RUNNING.value
+        failed.state = StepState.FAILED.value
+
+    second_decision = first_decision.model_copy(update={"reason": "retry after second failure"})
+    async with database.begin() as session:
+        second = await apply_replan(
+            session,
+            workspace_id,
+            task_id,
+            uuid4(),
+            "trace-second-replan",
+            second_decision,
+            expected_from_plan_id=first.to_plan_id,
+        )
+    assert second.from_plan_id == first.to_plan_id
+    assert second.to_plan_id is not None
+    assert second.to_plan_id != first.to_plan_id
+
+    async with database.begin() as session:
+        replay = await apply_replan(
+            session,
+            workspace_id,
+            task_id,
+            uuid4(),
+            "trace-second-replan-replay",
+            second_decision,
+            expected_from_plan_id=first.to_plan_id,
+        )
+    assert replay == second
+
+
 def test_deterministic_replan_trigger_uses_frozen_priority():
     assert (
         select_replan_trigger(
@@ -376,7 +434,19 @@ def test_deterministic_replan_trigger_uses_frozen_priority():
 async def test_failed_step_detection_and_activity_use_real_structured_model_http(
     database, monkeypatch
 ):
-    workspace_id, task_id, original = await _seed_replan_task(database)
+    ReplanModelHandler.calls = 0
+    server = ThreadingHTTPServer(("127.0.0.1", 0), ReplanModelHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    monkeypatch.setenv("DATABASE_URL", os.environ["TEST_DATABASE_URL"])
+    monkeypatch.setenv("MODEL_MODE", "local")
+    monkeypatch.setenv("MODEL_BASE_URL", f"http://127.0.0.1:{server.server_port}/v1")
+    monkeypatch.setenv("MODEL_NAME", "local-replan-test")
+    monkeypatch.setenv("MODEL_API_KEY", "")
+    workspace_id, task_id, original = await _seed_replan_task(
+        database,
+        model_config_versions=(default_model_version_ref(load_model_settings()[0]),),
+    )
     analyze_id = plan_step_id(original.plan_id, "analyze")
     async with database.begin() as session:
         session.add(
@@ -413,15 +483,6 @@ async def test_failed_step_detection_and_activity_use_real_structured_model_http
     assert state["failed_step_keys"] == ["analyze"]
     assert state["replan_trigger"] == "CAPABILITY_UNAVAILABLE"
 
-    ReplanModelHandler.calls = 0
-    server = ThreadingHTTPServer(("127.0.0.1", 0), ReplanModelHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    monkeypatch.setenv("DATABASE_URL", os.environ["TEST_DATABASE_URL"])
-    monkeypatch.setenv("MODEL_MODE", "local")
-    monkeypatch.setenv("MODEL_BASE_URL", f"http://127.0.0.1:{server.server_port}/v1")
-    monkeypatch.setenv("MODEL_NAME", "local-replan-test")
-    monkeypatch.setenv("MODEL_API_KEY", "")
     try:
         result = await generate_and_apply_replan(
             {
@@ -489,3 +550,93 @@ async def test_evidence_insufficiency_failure_selects_evidence_replan_trigger(
     assert state["plan_id"] == str(original.plan_id)
     assert state["failed_step_keys"] == ["analyze"]
     assert state["replan_trigger"] == "EVIDENCE_INSUFFICIENT"
+
+
+async def test_due_retry_is_returned_to_the_existing_attempt_path(database, monkeypatch):
+    workspace_id, task_id, original = await _seed_replan_task(database)
+    analyze_id = plan_step_id(original.plan_id, "analyze")
+    async with database.begin() as session:
+        analyze = await session.get(StepRow, analyze_id)
+        assert analyze is not None
+        analyze.state = StepState.RETRY_WAIT.value
+        analyze.retry_available_at = datetime.now(UTC) - timedelta(seconds=1)
+    monkeypatch.setenv("DATABASE_URL", os.environ["TEST_DATABASE_URL"])
+
+    state = await load_plan_execution_state(
+        {"workspace_id": str(workspace_id), "task_id": str(task_id)}
+    )
+
+    assert state["state"] == "READY"
+    assert state["ready_step_ids"] == [str(analyze_id)]
+    async with database() as session:
+        persisted = await session.get(StepRow, analyze_id)
+    assert persisted is not None
+    assert persisted.state == StepState.RETRY_WAIT.value
+
+
+async def test_future_retry_preserves_its_remaining_wait(database, monkeypatch):
+    workspace_id, task_id, original = await _seed_replan_task(database)
+    analyze_id = plan_step_id(original.plan_id, "analyze")
+    async with database.begin() as session:
+        analyze = await session.get(StepRow, analyze_id)
+        assert analyze is not None
+        analyze.state = StepState.RETRY_WAIT.value
+        analyze.retry_available_at = datetime.now(UTC) + timedelta(seconds=30)
+    monkeypatch.setenv("DATABASE_URL", os.environ["TEST_DATABASE_URL"])
+
+    state = await load_plan_execution_state(
+        {"workspace_id": str(workspace_id), "task_id": str(task_id)}
+    )
+
+    assert state["state"] == "RETRY_WAIT"
+    assert 0 < state["retry_after_seconds"] <= 30
+
+
+async def test_replacing_completed_collection_does_not_inherit_completed_state(database):
+    workspace_id, task_id, original = await _seed_replan_task(database)
+    revised = _step("collect", objective="a different evidence query")
+    async with database.begin() as session:
+        applied = await apply_replan(
+            session, workspace_id, task_id, task_id, "trace-refined-collection",
+            ReplanDecision(
+                reason="collect missing evidence", trigger="EVIDENCE_INSUFFICIENT",
+                action="REPLACE_STEP", affected_steps=("collect",), new_steps=(revised,),
+                preserve_completed_steps=True, budget_impact=0,
+            ), expected_from_plan_id=original.plan_id,
+        )
+    async with database() as session:
+        step = await session.get(StepRow, plan_step_id(applied.to_plan_id, "collect"))
+    assert step is not None and step.state == StepState.READY.value
+
+
+async def test_recovery_collection_uses_only_persisted_gap_and_retains_original_scope(database):
+    from enterprise_agent.capabilities.builtins import (
+        _optional_model_timeout_seconds,
+        _planned_web_queries,
+        _task_user_context,
+    )
+    from enterprise_agent.contracts.domain import CapabilityRequest
+    workspace_id, task_id, original = await _seed_replan_task(database)
+    context = {"original_request": "Compare current inventory and delivery", "research_plan": {
+        "web_queries": ["current inventory", "current delivery"], "retrieval_queries": [], "result_limit": 5,
+        "source_plan": {"required_sources": ["PUBLIC_WEB"], "preferred_sources": ["OFFICIAL_OR_FIRST_PARTY"], "fallback_sources": ["GENERAL_WEB"], "forbidden_sources": ["PARAMETRIC_KNOWLEDGE"]},
+        "answer_contract": {"answer_type": "FACT", "required_aspects": ["inventory", "delivery"], "completeness": "COMPLETE", "freshness": "CURRENT", "minimum_answer_items": 1, "maximum_answer_items": 4, "require_explicit_dates": False, "minimum_evidence_items": 1, "minimum_independent_sources": 1, "partial_answer_policy": "ALLOW_SUPPORTED_ONLY", "organization": "CONCISE"}}}
+    async with database.begin() as session:
+        row = await session.get(TaskRow, task_id)
+        goal = TaskGoal.model_validate(row.goal_payload)
+        row.goal_payload = goal.model_copy(update={"user_context": json.dumps(context)}).model_dump(mode="json")
+        applied = await apply_replan(session, workspace_id, task_id, task_id, "trace-gap-only",
+            ReplanDecision(reason="missing delivery", trigger="EVIDENCE_INSUFFICIENT", action="REPLACE_STEP",
+                affected_steps=("collect",), new_steps=(_step("collect", objective="delivery date confirmed official"),),
+                preserve_completed_steps=True, budget_impact=0), expected_from_plan_id=original.plan_id)
+    request = CapabilityRequest(command_id=uuid4(), operation_id=uuid4(), workspace_id=workspace_id,
+        task_id=task_id, step_id=plan_step_id(applied.to_plan_id, "collect"), attempt_id=uuid4(), fencing_token=1,
+        capability_id="web.search", capability_version="1.0.0", arguments={"query": "delivery date confirmed official"})
+    recovered = await _task_user_context(database, request)
+    assert _planned_web_queries(recovered, "untrusted override") == ("delivery date confirmed official",)
+    assert recovered["original_request"] == context["original_request"]
+    assert recovered["research_plan"]["answer_contract"] == context["research_plan"]["answer_contract"] | {"schema_version": 1}
+    async with database.begin() as session:
+        budget = await session.scalar(select(TaskBudgetRow).where(TaskBudgetRow.task_id == task_id))
+        budget.deadline = datetime.now(UTC) + timedelta(seconds=6)
+    assert await _optional_model_timeout_seconds(database, request, minimum_remaining=4) is None

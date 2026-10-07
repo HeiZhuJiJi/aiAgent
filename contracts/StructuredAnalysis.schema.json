@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "ClaimDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "content": {
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "importance": {
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ],
+          "title": "Importance",
+          "type": "string"
+        },
+        "risk_level": {
+          "$ref": "#/$defs/Risk"
+        },
+        "evidence_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "content",
+        "importance",
+        "risk_level",
+        "evidence_ids"
+      ],
+      "title": "ClaimDraft",
+      "type": "object"
+    },
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "decision": {
+      "pattern": "^(ADMIT|REJECT|NEEDS_MORE_EVIDENCE)$",
+      "title": "Decision",
+      "type": "string"
+    },
+    "risk_level": {
+      "pattern": "^(LOW|MEDIUM|HIGH|UNKNOWN)$",
+      "title": "Risk Level",
+      "type": "string"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "missing_information": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Information",
+      "type": "array"
+    },
+    "recommendation": {
+      "minLength": 1,
+      "title": "Recommendation",
+      "type": "string"
+    },
+    "evidence_sufficient": {
+      "title": "Evidence Sufficient",
+      "type": "boolean"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/ClaimDraft"
+      },
+      "title": "Claims",
+      "type": "array"
+    }
+  },
+  "required": [
+    "decision",
+    "risk_level",
+    "summary",
+    "key_findings",
+    "missing_information",
+    "recommendation",
+    "evidence_sufficient",
+    "claims"
+  ],
+  "title": "StructuredAnalysis",
+  "type": "object"
+}

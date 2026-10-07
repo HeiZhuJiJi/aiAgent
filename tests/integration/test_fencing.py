@@ -9,7 +9,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from enterprise_agent.contracts.domain import Evidence, FailureCode
 from enterprise_agent.domain.states import DomainError
-from enterprise_agent.storage.attempts import acquire_attempt, commit_evidence
+from enterprise_agent.storage.attempts import (
+    acquire_attempt,
+    commit_evidence,
+    renew_attempt_lease,
+)
 from enterprise_agent.storage.tables import (
     AttemptRow,
     AuditRow,
@@ -50,7 +54,7 @@ def evidence(w, t, s, a):
         source_id="fixture",
         locator="paragraph:1",
         content="Verified statement",
-        content_hash="a" * 64,
+        content_hash="21361c2fe617af72a2015d9be0816a90d1e70e4f678061366fa6d0298fee2de5",
         source_hash="b" * 64,
         source_version="1",
         confidence=1,
@@ -100,6 +104,37 @@ async def test_postgres_zombie_and_idempotent_commit(database):
             await session.execute(
                 update(AuditRow).where(AuditRow.workspace_id == w).values(action="tampered")
             )
+
+
+async def test_attempt_lease_heartbeat_extends_only_current_fenced_owner(database):
+    w, _, s = await seed(database)
+    attempt_id = uuid4()
+    async with database.begin() as session:
+        attempt = await acquire_attempt(
+            session,
+            w,
+            s,
+            attempt_id,
+            "worker-a",
+            "trace-a",
+            lease_seconds=30,
+        )
+        original_expiry = attempt.lease_expires_at
+        token = attempt.fencing_token
+    async with database.begin() as session:
+        renewed = await renew_attempt_lease(
+            session, w, attempt_id, token, lease_seconds=120
+        )
+        step = await session.get(StepRow, s)
+        assert step is not None
+        assert renewed.lease_expires_at > original_expiry
+        assert step.lease_expires_at == renewed.lease_expires_at
+    with pytest.raises(DomainError) as raised:
+        async with database.begin() as session:
+            await renew_attempt_lease(
+                session, w, attempt_id, token + 1, lease_seconds=120
+            )
+    assert raised.value.code == FailureCode.STALE_ATTEMPT
 
 
 async def test_cross_workspace_acquire_denied(database):

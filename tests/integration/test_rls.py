@@ -80,3 +80,37 @@ async def test_rls_role_has_only_authorized_table_privilege(rls_database):
         assert not await session.scalar(
             text("SELECT has_table_privilege(current_user, 'public.evidence', 'SELECT')")
         )
+
+
+async def test_every_workspace_scoped_platform_table_forces_fail_closed_rls(rls_database):
+    async with rls_database.begin() as session:
+        rows = (
+            await session.execute(
+                text("""
+                    SELECT c.relname, c.relrowsecurity, c.relforcerowsecurity,
+                           count(p.policyname) FILTER (
+                               WHERE p.qual LIKE '%app.workspace_id%'
+                                 AND p.with_check LIKE '%app.workspace_id%'
+                           ) AS workspace_policies
+                    FROM pg_class c
+                    JOIN pg_namespace n ON n.oid = c.relnamespace
+                    JOIN information_schema.columns col
+                      ON col.table_schema = n.nspname
+                     AND col.table_name = c.relname
+                     AND col.column_name = 'workspace_id'
+                    LEFT JOIN pg_policies p
+                      ON p.schemaname = n.nspname
+                     AND p.tablename = c.relname
+                    WHERE n.nspname = 'public' AND c.relkind = 'r'
+                    GROUP BY c.relname, c.relrowsecurity, c.relforcerowsecurity
+                    ORDER BY c.relname
+                """)
+            )
+        ).all()
+    assert len(rows) >= 30, "expected all core workspace-scoped tables after migrations"
+    unprotected = [
+        row.relname
+        for row in rows
+        if not row.relrowsecurity or not row.relforcerowsecurity or row.workspace_policies != 1
+    ]
+    assert unprotected == []

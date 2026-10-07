@@ -1,0 +1,91 @@
+{
+  "$defs": {
+    "AgentExecutionLevel": {
+      "enum": [
+        "INLINE_CHAT",
+        "BOUNDED_QA",
+        "DURABLE_TASK"
+      ],
+      "title": "AgentExecutionLevel",
+      "type": "string"
+    },
+    "AgentInformationSource": {
+      "enum": [
+        "MODEL",
+        "WEB",
+        "RAG",
+        "STRUCTURED_DATA"
+      ],
+      "title": "AgentInformationSource",
+      "type": "string"
+    },
+    "JsonValue": {},
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tool_name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Tool Name",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "input_schema": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Input Schema",
+      "type": "object"
+    },
+    "supported_sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentInformationSource"
+      },
+      "maxItems": 4,
+      "title": "Supported Sources",
+      "type": "array"
+    },
+    "execution_levels": {
+      "items": {
+        "$ref": "#/$defs/AgentExecutionLevel"
+      },
+      "maxItems": 3,
+      "minItems": 1,
+      "title": "Execution Levels",
+      "type": "array"
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk"
+    }
+  },
+  "required": [
+    "tool_name",
+    "description",
+    "execution_levels",
+    "risk"
+  ],
+  "title": "AgentToolDescriptor",
+  "type": "object"
+}

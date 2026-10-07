@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "AgentInformationSource": {
+      "enum": [
+        "MODEL",
+        "WEB",
+        "RAG",
+        "STRUCTURED_DATA"
+      ],
+      "title": "AgentInformationSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "required_sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentInformationSource"
+      },
+      "maxItems": 4,
+      "title": "Required Sources",
+      "type": "array"
+    },
+    "preferred_sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentInformationSource"
+      },
+      "maxItems": 4,
+      "title": "Preferred Sources",
+      "type": "array"
+    },
+    "fallback_sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentInformationSource"
+      },
+      "maxItems": 4,
+      "title": "Fallback Sources",
+      "type": "array"
+    },
+    "forbidden_sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentInformationSource"
+      },
+      "maxItems": 4,
+      "title": "Forbidden Sources",
+      "type": "array"
+    }
+  },
+  "title": "AgentSourcePlan",
+  "type": "object"
+}

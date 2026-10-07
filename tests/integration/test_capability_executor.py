@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
+from redis.asyncio import Redis
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -22,6 +23,7 @@ from enterprise_agent.contracts.domain import (
 )
 from enterprise_agent.domain.states import DomainError
 from enterprise_agent.governance.policy import PolicyInput, Role, Subject
+from enterprise_agent.runtime.admission import AdmissionLimits, RedisAdmissionController
 from enterprise_agent.runtime.failure_injector import (
     FailureDirective,
     FailureInjector,
@@ -242,6 +244,71 @@ async def test_read_only_call_validates_schema_and_replays_once(database):
             )
         ).all()
         assert len(calls) == 1 and calls[0].state == "SUCCEEDED"
+
+
+async def test_executor_waits_for_real_redis_mcp_admission_and_clears_reason(database):
+    workspace_id, task_id, step_id, attempt_id, token = await running_attempt(database)
+    capability = descriptor()
+    handler = RecordingCapability(output={"status": "found"})
+    registry = CapabilityRegistry()
+    registry.register(capability, handler)
+    redis = Redis.from_url("redis://127.0.0.1:56379/0", decode_responses=True)
+    namespace = "test:executor-admission:" + str(uuid4())
+    controller = RedisAdmissionController(
+        redis,
+        AdmissionLimits(
+            global_tasks=10,
+            workspace_tasks=10,
+            model_provider=10,
+            capability=1,
+            mcp=1,
+        ),
+        namespace,
+    )
+    blocker_decision, blocker = await controller.try_acquire_call(
+        workspace_id,
+        "procurement",
+        "other.lookup",
+        is_mcp=True,
+        lease_ms=5_000,
+    )
+    assert blocker_decision.allowed and blocker is not None
+    executor = CapabilityExecutor(
+        database,
+        registry,
+        admission_controller=controller,
+        admission_lease_ms=5_000,
+        admission_poll_seconds=0.02,
+    )
+    request = request_for(workspace_id, task_id, step_id, attempt_id, token, capability)
+    pending = asyncio.create_task(
+        executor.execute(request, policy(capability, workspace_id, task_id))
+    )
+    try:
+        await asyncio.sleep(0.1)
+        assert handler.calls == []
+        async with database() as session:
+            task = await session.get(TaskRow, task_id)
+            assert task is not None
+            assert task.schedule_block_reason == "mcp_concurrency"
+        await controller.release(blocker)
+        result = await asyncio.wait_for(pending, timeout=2)
+        assert result.outcome == "SUCCEEDED"
+        assert len(handler.calls) == 1
+        async with database() as session:
+            task = await session.get(TaskRow, task_id)
+            assert task is not None and task.schedule_block_reason is None
+        keys = [key async for key in redis.scan_iter(match=namespace + ":*")]
+        counts = [await redis.zcard(key) for key in keys]
+        assert all(count == 0 for count in counts)
+    finally:
+        if not pending.done():
+            pending.cancel()
+            await asyncio.gather(pending, return_exceptions=True)
+        keys = [key async for key in redis.scan_iter(match=namespace + ":*")]
+        if keys:
+            await redis.delete(*keys)
+        await redis.aclose()
 
 
 async def test_read_only_timeout_retries_with_descriptor_policy(database):

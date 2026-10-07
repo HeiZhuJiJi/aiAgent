@@ -1,0 +1,49 @@
+steps:
+  - step_key: retrieve-selected-document
+    objective: Retrieve evidence only from the permitted selected-document or active-workspace knowledge scope.
+    dependencies: []
+    capability_requirements:
+      - capability_id: knowledge.hybrid_search
+        version_range: ">=1,<2"
+    expected_output: Relevant permitted knowledge Evidence
+    success_criteria: [Every document hit belongs to the permitted knowledge scope]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 1
+  - step_key: search-current-web
+    objective: Search live public sources for evidence relevant to the same constrained question.
+    dependencies: []
+    capability_requirements:
+      - capability_id: web.search
+        version_range: ">=1,<2"
+    expected_output: Relevant current public web Evidence
+    success_criteria: [At least one constraint-matching public source is retained]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: true
+    max_attempts: 1
+  - step_key: synthesize-grounded-answer
+    objective: Reconcile permitted knowledge and public web Evidence without hiding conflicts.
+    dependencies: [retrieve-selected-document, search-current-web]
+    capability_requirements:
+      - capability_id: model.structured_output
+        version_range: ">=1,<2"
+    expected_output: Natural comparison with grounded Claims
+    success_criteria: [Every factual Claim cites matching Evidence]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: review-grounded-answer
+    objective: Verify source boundaries, citations, dates, versions, and numeric support.
+    dependencies: [synthesize-grounded-answer]
+    capability_requirements:
+      - capability_id: runtime.review
+        version_range: ">=1,<2"
+    expected_output: Accepted mixed-evidence answer review
+    success_criteria: [No unsupported material Claim remains]
+    risk_hint: READ
+    execution_mode: REVIEW
+    parallelizable: false
+    max_attempts: 2

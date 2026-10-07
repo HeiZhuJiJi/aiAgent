@@ -9,5 +9,6 @@ COPY requirements.lock.txt /app/requirements.lock.txt
 RUN grep -v '^pywin32==' requirements.lock.txt > /tmp/runtime-requirements.txt \
     && pip install --no-cache-dir -r /tmp/runtime-requirements.txt
 COPY . /app
+RUN pip install --no-cache-dir --no-deps .
 
 RUN python -c "from enterprise_agent.api import app; assert app.title"

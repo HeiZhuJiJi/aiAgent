@@ -23,6 +23,7 @@ from enterprise_agent.contracts.domain import CapabilityRequest, Evidence, TaskG
 from enterprise_agent.runtime.budgets import new_task_budget
 from enterprise_agent.storage.artifacts import ArtifactStore
 from enterprise_agent.storage.knowledge import ChunkInput, persist_document_version
+from enterprise_agent.storage.plans import persist_snapshot
 from enterprise_agent.storage.provenance import load_claims
 from enterprise_agent.storage.tables import (
     AttemptRow,
@@ -33,6 +34,7 @@ from enterprise_agent.storage.tables import (
     TaskRow,
     Workspace,
 )
+from enterprise_agent.storage.tasks import current_snapshot
 
 
 class BuiltinProviderHandler(BaseHTTPRequestHandler):
@@ -94,6 +96,8 @@ class BuiltinProviderHandler(BaseHTTPRequestHandler):
                         "title": "Public supplier record",
                         "url": "https://example.test/supplier",
                         "snippet": snippet,
+                        "published_at": None,
+                        "observed_at": "2026-09-12T00:00:00Z",
                         "content_hash": hashlib.sha256(snippet.encode()).hexdigest(),
                     }
                 ]
@@ -148,6 +152,7 @@ async def test_builtin_capabilities_use_real_postgres_http_model_web_and_minio(
 ):
     password = dotenv_values(".env").get("MINIO_ROOT_PASSWORD")
     assert password
+    minio_endpoint = os.environ.get("TEST_MINIO_ENDPOINT", "127.0.0.1:59000")
     server = ThreadingHTTPServer(("127.0.0.1", 0), BuiltinProviderHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -164,7 +169,7 @@ async def test_builtin_capabilities_use_real_postgres_http_model_web_and_minio(
     monkeypatch.setenv("WEB_MODE", "local")
     monkeypatch.setenv("WEB_BASE_URL", base_url)
     monkeypatch.setenv("WEB_API_KEY", "")
-    monkeypatch.setenv("MINIO_ENDPOINT", "127.0.0.1:59000")
+    monkeypatch.setenv("MINIO_ENDPOINT", minio_endpoint)
     monkeypatch.setenv("MINIO_ACCESS_KEY", "platform")
     monkeypatch.setenv("MINIO_SECRET_KEY", str(password))
     bucket = "runtime-builtins-" + uuid4().hex
@@ -205,14 +210,17 @@ async def test_builtin_capabilities_use_real_postgres_http_model_web_and_minio(
         generated_by=attempt_id,
         derived_from=(),
     )
+    execution_snapshot = current_snapshot(workspace_id)
     async with sessions.begin() as session:
         session.add(Workspace(id=workspace_id, name="builtin-capabilities"))
         await session.flush()
+        await persist_snapshot(session, execution_snapshot)
         session.add(
             TaskRow(
                 id=task_id,
                 workspace_id=workspace_id,
                 state="RUNNING",
+                execution_snapshot_id=execution_snapshot.snapshot_id,
                 goal_payload=goal.model_dump(mode="json"),
             )
         )
@@ -373,7 +381,7 @@ async def test_builtin_capabilities_use_real_postgres_http_model_web_and_minio(
         async with sessions() as session:
             content = await ArtifactStore(
                 Minio(
-                    "127.0.0.1:59000",
+                    minio_endpoint,
                     access_key="platform",
                     secret_key=str(password),
                     secure=False,

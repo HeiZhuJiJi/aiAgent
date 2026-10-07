@@ -1,0 +1,13 @@
+name: grounded-research
+version: 1.0.0
+description: Governed comparison of permitted workspace knowledge with live public web evidence.
+runtime_contract: 1
+dependencies:
+  - capability_id: knowledge.hybrid_search
+    version_range: ">=1,<2"
+  - capability_id: web.search
+    version_range: ">=1,<2"
+  - capability_id: model.structured_output
+    version_range: ">=1,<2"
+  - capability_id: runtime.review
+    version_range: ">=1,<2"

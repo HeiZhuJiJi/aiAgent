@@ -93,6 +93,67 @@ class FailureCode(StrEnum):
     CONSISTENCY_VIOLATION = "CONSISTENCY_VIOLATION"
 
 
+class RequirementType(StrEnum):
+    READ = "READ"
+    ANALYSIS = "ANALYSIS"
+    WRITE = "WRITE"
+    VERIFICATION = "VERIFICATION"
+
+
+class AssessmentStatus(StrEnum):
+    SUPPORTED = "SUPPORTED"
+    PARTIALLY_SUPPORTED = "PARTIALLY_SUPPORTED"
+    UNSUPPORTED = "UNSUPPORTED"
+    CONFLICTING = "CONFLICTING"
+    STALE = "STALE"
+    UNVERIFIABLE = "UNVERIFIABLE"
+    UNKNOWN = "UNKNOWN"
+    BLOCKED = "BLOCKED"
+
+
+class GapType(StrEnum):
+    MISSING = "MISSING"
+    UNSUPPORTED = "UNSUPPORTED"
+    CONFLICT = "CONFLICT"
+    STALE = "STALE"
+    AMBIGUOUS = "AMBIGUOUS"
+    INVALID = "INVALID"
+    UNKNOWN = "UNKNOWN"
+    AUTHORIZATION = "AUTHORIZATION"
+
+
+class CompletionStatus(StrEnum):
+    COMPLETE = "COMPLETE"
+    PARTIAL = "PARTIAL"
+    UNAVAILABLE = "UNAVAILABLE"
+
+
+class DeliveryDecisionType(StrEnum):
+    FULL_ANSWER = "FULL_ANSWER"
+    PARTIAL_ANSWER = "PARTIAL_ANSWER"
+    CLARIFICATION_REQUIRED = "CLARIFICATION_REQUIRED"
+    UNAVAILABLE = "UNAVAILABLE"
+    BLOCKED = "BLOCKED"
+
+
+class RequirementRelationType(StrEnum):
+    INTENDED_TO_SATISFY = "INTENDED_TO_SATISFY"
+    PRODUCED_EVIDENCE_FOR = "PRODUCED_EVIDENCE_FOR"
+    VERIFIED_AGAINST = "VERIFIED_AGAINST"
+
+
+class RecoveryAction(StrEnum):
+    RETRY = "RETRY"
+    REPLAN = "REPLAN"
+    REPAIR = "REPAIR"
+    ADDITIONAL_VERIFICATION = "ADDITIONAL_VERIFICATION"
+    RECONCILE = "RECONCILE"
+    REFRESH = "REFRESH"
+    CLARIFICATION = "CLARIFICATION"
+    AWAIT_AUTHORIZATION = "AWAIT_AUTHORIZATION"
+    DELIVERY_DOWNGRADE = "DELIVERY_DOWNGRADE"
+
+
 class Failure(Contract):
     code: FailureCode
     safe_detail: str
@@ -110,6 +171,7 @@ class KnowledgeIngestionView(Contract):
     state: Literal["PENDING", "RUNNING", "SUCCEEDED", "FAILED"]
     version: int
     document_version_id: UUID | None
+    document_version: int | None
     safe_error: str | None
     created_at: datetime
     completed_at: datetime | None
@@ -392,6 +454,356 @@ class Claim(Contract):
     evidence_ids: tuple[UUID, ...]
 
 
+class ClaimDraft(Contract):
+    content: str = Field(min_length=1)
+    importance: Literal["LOW", "MEDIUM", "HIGH"]
+    risk_level: Risk
+    evidence_ids: tuple[UUID, ...] = Field(min_length=1)
+
+
+class PersistedClaim(ClaimDraft):
+    claim_id: UUID
+
+
+class StructuredAnalysis(Contract):
+    decision: str = Field(pattern="^(ADMIT|REJECT|NEEDS_MORE_EVIDENCE)$")
+    risk_level: str = Field(pattern="^(LOW|MEDIUM|HIGH|UNKNOWN)$")
+    summary: str = Field(min_length=1)
+    key_findings: tuple[str, ...]
+    missing_information: tuple[str, ...]
+    recommendation: str = Field(min_length=1)
+    evidence_sufficient: bool
+    claims: tuple[ClaimDraft, ...]
+
+
+class StructuredAnalysisResult(Contract):
+    decision: str = Field(pattern="^(ADMIT|REJECT|NEEDS_MORE_EVIDENCE)$")
+    risk_level: str = Field(pattern="^(LOW|MEDIUM|HIGH|UNKNOWN)$")
+    summary: str = Field(min_length=1)
+    key_findings: tuple[str, ...]
+    missing_information: tuple[str, ...]
+    recommendation: str = Field(min_length=1)
+    evidence_sufficient: bool
+    claims: tuple[PersistedClaim, ...]
+
+
+ResearchSource = Literal["PUBLIC_WEB", "SELECTED_DOCUMENT", "WORKSPACE_KNOWLEDGE"]
+ResearchSourceClass = Literal[
+    "STRUCTURED_DATA",
+    "OFFICIAL_OR_FIRST_PARTY",
+    "INDEPENDENT_MEDIA",
+    "ACADEMIC",
+    "SELECTED_DOCUMENT",
+    "WORKSPACE_KNOWLEDGE",
+    "GENERAL_WEB",
+    "USER_GENERATED",
+    "PARAMETRIC_KNOWLEDGE",
+]
+
+
+class SourcePlan(Contract):
+    """Bounded evidence-source priorities, never executable provider instructions."""
+
+    required_sources: tuple[ResearchSource, ...] = Field(min_length=1, max_length=2)
+    preferred_sources: tuple[ResearchSourceClass, ...] = Field(default=(), max_length=6)
+    fallback_sources: tuple[ResearchSourceClass, ...] = Field(default=(), max_length=4)
+    forbidden_sources: tuple[ResearchSourceClass, ...] = Field(default=(), max_length=4)
+
+    @model_validator(mode="after")
+    def validate_source_priorities(self) -> Self:
+        groups = (
+            self.required_sources,
+            self.preferred_sources,
+            self.fallback_sources,
+            self.forbidden_sources,
+        )
+        if any(len(group) != len(set(group)) for group in groups):
+            raise ValueError("source plan entries must be unique within each priority")
+        preference_groups = (
+            set(self.preferred_sources),
+            set(self.fallback_sources),
+            set(self.forbidden_sources),
+        )
+        if any(
+            left & right
+            for index, left in enumerate(preference_groups)
+            for right in preference_groups[index + 1 :]
+        ):
+            raise ValueError("source plan priorities must be disjoint")
+        if "PARAMETRIC_KNOWLEDGE" not in self.forbidden_sources:
+            raise ValueError("bounded research cannot use parametric knowledge as Evidence")
+        return self
+
+
+class AnswerContract(Contract):
+    """The user-visible answer shape and minimum evidence needed to satisfy it."""
+
+    answer_type: Literal[
+        "FACT",
+        "SUMMARY",
+        "LIST",
+        "TIMELINE",
+        "COMPARISON",
+        "EXPLANATION",
+        "FORECAST",
+        "DOCUMENT_SUMMARY",
+        "DOCUMENT_QA",
+    ]
+    required_aspects: tuple[str, ...] = Field(min_length=1, max_length=6)
+    completeness: Literal["COMPLETE", "BEST_EFFORT"]
+    freshness: Literal["STABLE", "CURRENT", "HISTORICAL", "SOURCE_BOUND"]
+    minimum_answer_items: int | None = Field(default=None, ge=1, le=8)
+    maximum_answer_items: int | None = Field(default=None, ge=1, le=8)
+    require_explicit_dates: bool
+    minimum_evidence_items: int = Field(ge=1, le=5)
+    minimum_independent_sources: int = Field(ge=1, le=3)
+    partial_answer_policy: Literal["ALLOW_SUPPORTED_ONLY", "REQUIRE_COMPLETE"]
+    organization: Literal[
+        "CONCISE",
+        "BULLETS",
+        "TIMELINE",
+        "COMPARISON",
+        "STRUCTURED_SUMMARY",
+    ]
+
+    @model_validator(mode="after")
+    def validate_required_aspects(self) -> Self:
+        normalized = tuple(item.strip() for item in self.required_aspects)
+        if any(not item or len(item) > 200 for item in normalized):
+            raise ValueError("answer contract aspects must contain 1-200 characters")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("answer contract aspects must be unique")
+        if self.minimum_independent_sources > self.minimum_evidence_items:
+            raise ValueError("independent-source minimum cannot exceed Evidence minimum")
+        if (self.minimum_answer_items is None) != (self.maximum_answer_items is None):
+            raise ValueError("answer item bounds must either both be set or both be omitted")
+        if self.answer_type != "DOCUMENT_SUMMARY" and self.minimum_answer_items is None:
+            raise ValueError("non-summary answers require bounded answer item counts")
+        if (
+            self.minimum_answer_items is not None
+            and self.maximum_answer_items is not None
+            and self.minimum_answer_items > self.maximum_answer_items
+        ):
+            raise ValueError("minimum answer items cannot exceed maximum answer items")
+        return self
+
+
+class AgentSpeechAct(StrEnum):
+    QUESTION = "QUESTION"
+    FOLLOW_UP = "FOLLOW_UP"
+    CORRECTION = "CORRECTION"
+    CLARIFICATION = "CLARIFICATION"
+    COMMAND = "COMMAND"
+    SOCIAL = "SOCIAL"
+
+
+class AgentExecutionLevel(StrEnum):
+    INLINE_CHAT = "INLINE_CHAT"
+    BOUNDED_QA = "BOUNDED_QA"
+    DURABLE_TASK = "DURABLE_TASK"
+
+
+class AgentInformationSource(StrEnum):
+    MODEL = "MODEL"
+    WEB = "WEB"
+    RAG = "RAG"
+    STRUCTURED_DATA = "STRUCTURED_DATA"
+
+
+class AgentPlannerAction(StrEnum):
+    RESPOND = "RESPOND"
+    CLARIFY = "CLARIFY"
+    EXECUTE = "EXECUTE"
+
+
+class TemporalFrame(Contract):
+    direction: Literal["STABLE", "CURRENT", "HISTORICAL", "FUTURE"]
+    requires_fresh_information: bool
+    expression: str | None = Field(default=None, max_length=200)
+    start_at: AwareDatetime | None = None
+    end_at: AwareDatetime | None = None
+
+    @model_validator(mode="after")
+    def validate_range(self) -> Self:
+        if self.start_at is not None and self.end_at is not None and self.start_at > self.end_at:
+            raise ValueError("temporal start must not be after end")
+        if self.requires_fresh_information and self.direction not in {"CURRENT", "FUTURE"}:
+            raise ValueError("fresh information requires current or future temporal direction")
+        return self
+
+
+class IntentFrame(Contract):
+    speech_act: AgentSpeechAct
+    normalized_question: str = Field(min_length=1, max_length=4000)
+    references: tuple[str, ...] = Field(default=(), max_length=8)
+    entities: tuple[str, ...] = Field(default=(), max_length=12)
+    temporal: TemporalFrame
+    missing_information: tuple[str, ...] = Field(default=(), max_length=6)
+
+
+class AgentSourcePlan(Contract):
+    required_sources: tuple[AgentInformationSource, ...] = Field(default=(), max_length=4)
+    preferred_sources: tuple[AgentInformationSource, ...] = Field(default=(), max_length=4)
+    fallback_sources: tuple[AgentInformationSource, ...] = Field(default=(), max_length=4)
+    forbidden_sources: tuple[AgentInformationSource, ...] = Field(default=(), max_length=4)
+
+    @model_validator(mode="after")
+    def validate_priorities(self) -> Self:
+        groups = (
+            self.required_sources,
+            self.preferred_sources,
+            self.fallback_sources,
+            self.forbidden_sources,
+        )
+        if any(len(group) != len(set(group)) for group in groups):
+            raise ValueError("agent source plan entries must be unique within each priority")
+        sets = tuple(set(group) for group in groups)
+        if any(left & right for index, left in enumerate(sets) for right in sets[index + 1 :]):
+            raise ValueError("agent source plan priorities must be disjoint")
+        return self
+
+
+class PlannedToolCall(Contract):
+    tool_name: str = Field(min_length=1, max_length=200)
+    purpose: str = Field(min_length=1, max_length=500)
+    arguments: dict[str, JsonValue] = Field(default_factory=dict)
+    risk: Risk = Risk.READ
+
+
+class AgentToolDescriptor(Contract):
+    tool_name: str = Field(min_length=1, max_length=200)
+    description: str = Field(min_length=1, max_length=1000)
+    input_schema: dict[str, JsonValue] = Field(default_factory=dict)
+    supported_sources: tuple[AgentInformationSource, ...] = Field(default=(), max_length=4)
+    execution_levels: tuple[AgentExecutionLevel, ...] = Field(min_length=1, max_length=3)
+    risk: Risk
+
+
+class ExecutionDecision(Contract):
+    execution_level: AgentExecutionLevel
+    source_plan: AgentSourcePlan
+    risk: Risk
+    maximum_tool_steps: int = Field(ge=0, le=8)
+    confidence: float = Field(ge=0, le=1, allow_inf_nan=False)
+
+
+class ModelBinding(Contract):
+    config_id: UUID
+    provider: Literal["Qwen", "DeepSeek", "OpenAICompatible"]
+    model_name: str = Field(min_length=1, max_length=300)
+    config_version: int = Field(gt=0)
+    selected_by: Literal["USER", "DEFAULT"]
+
+
+class AgentTurnDecision(Contract):
+    action: AgentPlannerAction
+    intent: IntentFrame
+    execution: ExecutionDecision
+    answer_contract: AnswerContract | None = None
+    tool_plan: tuple[PlannedToolCall, ...] = Field(default=(), max_length=8)
+    direct_response: str | None = Field(default=None, max_length=32_000)
+
+    @model_validator(mode="after")
+    def validate_action(self) -> Self:
+        if self.action == AgentPlannerAction.RESPOND:
+            if self.execution.execution_level != AgentExecutionLevel.INLINE_CHAT:
+                raise ValueError("a direct response must use INLINE_CHAT")
+            if not self.direct_response or self.tool_plan or self.answer_contract is not None:
+                raise ValueError("a direct response cannot include tools or an answer contract")
+        elif self.action == AgentPlannerAction.CLARIFY:
+            if not self.intent.missing_information:
+                raise ValueError("a clarification requires missing information")
+            if not self.direct_response or self.tool_plan:
+                raise ValueError("a clarification requires one response and no tools")
+        else:
+            if self.direct_response is not None:
+                raise ValueError("an execution decision cannot include a direct response")
+            if not self.tool_plan:
+                raise ValueError("an execution decision requires at least one tool")
+            if (
+                self.execution.execution_level != AgentExecutionLevel.INLINE_CHAT
+                and self.answer_contract is None
+            ):
+                raise ValueError("a grounded execution decision requires an answer contract")
+        if self.execution.execution_level == AgentExecutionLevel.INLINE_CHAT:
+            disallowed = {
+                AgentInformationSource.WEB,
+                AgentInformationSource.RAG,
+                AgentInformationSource.STRUCTURED_DATA,
+            }
+            if set(self.execution.source_plan.required_sources) & disallowed:
+                raise ValueError("INLINE_CHAT cannot require external information sources")
+        if self.intent.temporal.requires_fresh_information:
+            sources = {
+                *self.execution.source_plan.required_sources,
+                *self.execution.source_plan.preferred_sources,
+            }
+            if not sources & {
+                AgentInformationSource.WEB,
+                AgentInformationSource.STRUCTURED_DATA,
+            }:
+                raise ValueError("fresh information requires Web or structured data")
+        return self
+
+
+class AgentRecoveryAction(StrEnum):
+    RETRY = "RETRY"
+    REPAIR_ANSWER = "REPAIR_ANSWER"
+    RETRIEVE_MORE = "RETRIEVE_MORE"
+    REPLAN = "REPLAN"
+    PARTIAL_ACCEPT = "PARTIAL_ACCEPT"
+    CLARIFY = "CLARIFY"
+    UNAVAILABLE = "UNAVAILABLE"
+    FAIL = "FAIL"
+
+
+class AgentRecoveryDecision(Contract):
+    action: AgentRecoveryAction
+    reason: str = Field(min_length=1, max_length=1000)
+    failed_node: str = Field(min_length=1, max_length=200)
+    prohibited_repetitions: tuple[str, ...] = Field(default=(), max_length=12)
+    remaining_attempts: int = Field(ge=0, le=3)
+
+
+def validate_entity_aliases(scope: tuple[str, ...], aliases: dict[str, tuple[str, ...]]) -> None:
+    """Aliases are bounded discovery hints, never proof of an entity match."""
+    if len(aliases) > 6 or any(key not in scope for key in aliases):
+        raise ValueError("entity aliases must refer to declared canonical scope")
+    if any(not values or len(values) > 3 or any(not value.strip() or len(value) > 200 for value in values)
+           for values in aliases.values()):
+        raise ValueError("each entity allows 1-3 complete aliases of 1-200 characters")
+
+
+class BoundedResearchPlan(Contract):
+    """A non-executable, bounded plan for retrieval and grounded answer composition."""
+
+    entity_scope: tuple[str, ...] = Field(default=(), max_length=6)
+    entity_aliases: dict[str, tuple[str, ...]] = Field(default_factory=dict, max_length=6)
+
+    web_queries: tuple[str, ...] = Field(default=(), max_length=5)
+    retrieval_queries: tuple[str, ...] = Field(default=(), max_length=3)
+    source_plan: SourcePlan
+    result_limit: int = Field(ge=1, le=5)
+    answer_contract: AnswerContract
+
+    @model_validator(mode="after")
+    def validate_queries(self) -> Self:
+        validate_entity_aliases(self.entity_scope, self.entity_aliases)
+        if any(not item.strip() or len(item) > 200 for item in self.entity_scope):
+            raise ValueError("entity scope entries must contain 1-200 characters")
+        queries = (*self.web_queries, *self.retrieval_queries)
+        normalized = tuple(item.strip() for item in queries)
+        if not normalized:
+            raise ValueError("bounded research requires at least one query")
+        if any(not item or len(item) > 1000 for item in normalized):
+            raise ValueError("research queries must contain 1-1000 characters")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("research queries must be unique")
+        if self.answer_contract.minimum_evidence_items > self.result_limit:
+            raise ValueError("Evidence minimum cannot exceed the bounded result limit")
+        return self
+
+
 class ApprovalRequest(Contract):
     approval_id: UUID
     workspace_id: UUID
@@ -432,6 +844,130 @@ class ReplanDecision(Contract):
     new_steps: tuple[PlanStepSpec, ...]
     preserve_completed_steps: bool
     budget_impact: float = Field(ge=0, allow_inf_nan=False)
+
+
+class ContractVersion(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    version: int = Field(ge=1)
+    supersedes_id: UUID | None = None
+    content_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    goal: str = Field(min_length=1)
+    constraints: tuple[str, ...] = ()
+    completion_policy: dict[str, JsonValue] = {}
+    created_by: UUID
+    created_at: AwareDatetime
+
+
+class Requirement(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    contract_version_id: UUID
+    key: str = Field(min_length=1, max_length=200)
+    type: RequirementType
+    mandatory: bool
+    description: str = Field(min_length=1)
+    completion_rule: str = Field(min_length=1)
+    entity_scope: tuple[str, ...] = ()
+    temporal_scope: tuple[str, ...] = ()
+    freshness_policy: dict[str, JsonValue] = {}
+    evidence_policy: dict[str, JsonValue] = {}
+    delivery_policy: dict[str, JsonValue] = {}
+    legacy: bool = False
+
+
+class RequirementSupport(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    requirement_id: UUID
+    plan_revision_id: UUID
+    step_id: UUID
+    relation_type: RequirementRelationType
+    created_at: AwareDatetime
+
+
+class VerificationGates(Contract):
+    entity_match: bool
+    temporal_match: bool
+    evidence_support: bool
+    authorization: bool
+    operation_certainty: Literal["CERTAIN", "UNKNOWN", "CONFLICTING"]
+    schema_validity: bool
+
+
+class VerificationMetrics(Contract):
+    completeness: float = Field(ge=0, le=1)
+    freshness: float = Field(ge=0, le=1)
+    source_quality: float = Field(ge=0, le=1)
+    relevance: float = Field(ge=0, le=1)
+    redundancy: float = Field(ge=0, le=1)
+
+
+class VerificationResult(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    claim_ids: tuple[UUID, ...] = ()
+    evidence_ids: tuple[UUID, ...] = ()
+    gates: VerificationGates
+    metrics: VerificationMetrics
+    verifier_version: str = Field(min_length=1)
+    policy_version: str = Field(min_length=1)
+    input_snapshot_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    created_at: AwareDatetime
+    attempt_id: UUID | None = None
+    fencing_token: int | None = Field(default=None, ge=0)
+
+
+class RequirementAssessment(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    requirement_id: UUID
+    status: AssessmentStatus
+    gap_type: GapType | None = None
+    supporting_claim_ids: tuple[UUID, ...] = ()
+    supporting_evidence_ids: tuple[UUID, ...] = ()
+    verification_ref: UUID | None = None
+    evaluator_version: str = Field(min_length=1)
+    policy_version: str = Field(min_length=1)
+    input_snapshot_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    assessed_at: AwareDatetime
+    supersedes_id: UUID | None = None
+    attempt_id: UUID | None = None
+    fencing_token: int | None = Field(default=None, ge=0)
+
+
+class Gap(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    requirement_id: UUID | None = None
+    gap_type: GapType
+    recovery_action: RecoveryAction
+    description: str = Field(min_length=1)
+    assessment_ref: UUID | None = None
+    created_at: AwareDatetime
+
+
+class DeliveryDecision(Contract):
+    id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    completion_snapshot_id: UUID
+    decision: DeliveryDecisionType
+    included_claim_ids: tuple[UUID, ...] = ()
+    excluded_claim_ids: tuple[UUID, ...] = ()
+    unresolved_requirement_ids: tuple[UUID, ...] = ()
+    reason_codes: tuple[str, ...] = ()
+    disclosure: str = ""
+    policy_version: str = Field(min_length=1)
+    verification_ref: UUID | None = None
+    created_at: AwareDatetime
+    supersedes_id: UUID | None = None
 
 
 class ContextItem(Contract):
@@ -487,6 +1023,107 @@ class ConversationMessage(Contract):
     role: Literal["SYSTEM", "USER", "ASSISTANT"]
     content: str = Field(min_length=1, max_length=1_000_000)
     created_at: AwareDatetime
+
+
+class ConversationTurnState(StrEnum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class ConversationTurnAttemptState(StrEnum):
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    SUPERSEDED = "SUPERSEDED"
+
+
+class ConversationTurnOutcomeStatus(StrEnum):
+    ANSWERED = "ANSWERED"
+    PARTIALLY_ANSWERED = "PARTIALLY_ANSWERED"
+    CLARIFICATION_REQUIRED = "CLARIFICATION_REQUIRED"
+    UNAVAILABLE = "UNAVAILABLE"
+    FAILED = "FAILED"
+
+
+class ConversationTurn(Contract):
+    turn_id: UUID
+    workspace_id: UUID
+    conversation_id: UUID
+    user_message_id: UUID
+    state: ConversationTurnState
+    task_id: UUID | None = None
+    active_attempt_id: UUID | None = None
+    decision_version: int = Field(gt=0)
+    fencing_token: int = Field(ge=0)
+    context_eligible: bool
+    version: int = Field(gt=0)
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
+    completed_at: AwareDatetime | None = None
+
+
+class ConversationTurnAttempt(Contract):
+    attempt_id: UUID
+    workspace_id: UUID
+    turn_id: UUID
+    state: ConversationTurnAttemptState
+    fencing_token: int = Field(gt=0)
+    trace_id: str = Field(min_length=1, max_length=200)
+    failure: Failure | None = None
+    started_at: AwareDatetime
+    completed_at: AwareDatetime | None = None
+
+
+class ConversationTurnOutcome(Contract):
+    outcome_id: UUID
+    workspace_id: UUID
+    turn_id: UUID
+    attempt_id: UUID
+    status: ConversationTurnOutcomeStatus
+    assistant_message_id: UUID
+    failure: Failure | None = None
+    context_eligible: bool
+    created_at: AwareDatetime
+
+    @model_validator(mode="after")
+    def validate_failure_semantics(self) -> Self:
+        failed = self.status in {
+            ConversationTurnOutcomeStatus.UNAVAILABLE,
+            ConversationTurnOutcomeStatus.FAILED,
+        }
+        if failed != (self.failure is not None):
+            raise ValueError("turn outcome failure does not match status")
+        return self
+
+
+class ConversationTurnProjection(Contract):
+    turn: ConversationTurn
+    user_message: ConversationMessage
+    outcome: ConversationTurnOutcome
+    assistant_message: ConversationMessage
+
+
+class ConversationAttachment(Contract):
+    """Presentation-safe reference to the document bound to one user Turn."""
+
+    ingestion_id: UUID
+    document_version_id: UUID
+    name: str = Field(min_length=1, max_length=500)
+    media_type: str = Field(min_length=1, max_length=200)
+
+
+class ConversationTimelineMessage(ConversationMessage):
+    """A presentation-only message projection bound to its authoritative Turn."""
+
+    turn_id: UUID | None = None
+    turn_state: ConversationTurnState | None = None
+    turn_outcome_status: ConversationTurnOutcomeStatus | None = None
+    attachment: ConversationAttachment | None = None
 
 
 class ProjectMemoryType(StrEnum):

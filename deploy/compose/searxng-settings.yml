@@ -1,0 +1,43 @@
+use_default_settings:
+  engines:
+    keep_only:
+      - baidu
+      - sogou
+      - 360search
+      - bing
+      - brave
+      - duckduckgo
+      - google
+
+general:
+  instance_name: Enterprise Agent Search
+  debug: false
+
+search:
+  safe_search: 1
+  formats:
+    - html
+    - json
+
+server:
+  bind_address: 0.0.0.0
+  port: 8080
+  limiter: false
+  public_instance: false
+
+engines:
+  - name: baidu
+    disabled: true
+  - name: sogou
+    disabled: false
+  - name: 360search
+    disabled: false
+  - name: bing
+    disabled: false
+    base_url: https://www.bing.com
+  - name: brave
+    disabled: false
+  - name: duckduckgo
+    disabled: true
+  - name: google
+    disabled: false

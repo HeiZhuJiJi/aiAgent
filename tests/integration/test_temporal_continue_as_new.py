@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import uuid4
 
 from temporalio import activity
@@ -12,9 +13,36 @@ from enterprise_agent.runtime.workflows import (
 
 
 class ContinuationProbe:
+    admission_calls = 0
+    release_calls = 0
     binding_calls = 0
     state_calls = 0
     persist_calls = 0
+    materialize_calls = 0
+
+
+@activity.defn(name="acquire_plan_admission")
+async def probe_admission(value: dict[str, str]) -> dict[str, Any]:
+    assert set(value) == {"task_id", "workspace_id"}
+    ContinuationProbe.admission_calls += 1
+    return {
+        "allowed": True,
+        "block_reason": None,
+        "lease_id": str(uuid4()),
+        "keys": ["test:global", "test:workspace"],
+        "expires_at_ms": 1,
+    }
+
+
+@activity.defn(name="heartbeat_plan_admission")
+async def probe_admission_heartbeat(value: dict[str, Any]) -> dict[str, Any]:
+    return value
+
+
+@activity.defn(name="release_plan_admission")
+async def probe_admission_release(value: dict[str, Any]) -> None:
+    assert set(value) == {"lease_id", "keys", "expires_at_ms"}
+    ContinuationProbe.release_calls += 1
 
 
 @activity.defn(name="load_plan_execution_binding")
@@ -68,17 +96,35 @@ async def probe_persist(value: dict[str, str]) -> dict[str, str]:
     }
 
 
+@activity.defn(name="materialize_chat_task_turn")
+async def probe_materialize(value: dict[str, str]) -> dict[str, object]:
+    assert set(value) == {"task_id", "workspace_id"}
+    ContinuationProbe.materialize_calls += 1
+    return {"materialized": False}
+
+
 async def test_real_temporal_continues_with_only_frozen_minimal_payload() -> None:
+    ContinuationProbe.admission_calls = 0
+    ContinuationProbe.release_calls = 0
     ContinuationProbe.binding_calls = 0
     ContinuationProbe.state_calls = 0
     ContinuationProbe.persist_calls = 0
+    ContinuationProbe.materialize_calls = 0
     temporal = await Client.connect("127.0.0.1:57233")
     task_queue = "continue-as-new-" + str(uuid4())
     async with Worker(
         temporal,
         task_queue=task_queue,
         workflows=[PlanExecutionWorkflow],
-        activities=[probe_binding, probe_state, probe_persist],
+        activities=[
+            probe_admission,
+            probe_admission_heartbeat,
+            probe_admission_release,
+            probe_binding,
+            probe_state,
+            probe_persist,
+            probe_materialize,
+        ],
     ):
         result = await temporal.execute_workflow(
             PlanExecutionWorkflow.run,
@@ -93,22 +139,36 @@ async def test_real_temporal_continues_with_only_frozen_minimal_payload() -> Non
         )
 
     assert result.state == "COMPLETED"
+    assert ContinuationProbe.admission_calls == 2
+    assert ContinuationProbe.release_calls == 2
     assert ContinuationProbe.persist_calls == 1
     assert ContinuationProbe.binding_calls == 2
     assert ContinuationProbe.state_calls == 2
+    assert ContinuationProbe.materialize_calls == 1
 
 
 async def test_real_temporal_decodes_legacy_plan_input() -> None:
+    ContinuationProbe.admission_calls = 0
+    ContinuationProbe.release_calls = 0
     ContinuationProbe.binding_calls = 0
     ContinuationProbe.state_calls = 1
     ContinuationProbe.persist_calls = 0
+    ContinuationProbe.materialize_calls = 0
     temporal = await Client.connect("127.0.0.1:57233")
     task_queue = "legacy-input-" + str(uuid4())
     async with Worker(
         temporal,
         task_queue=task_queue,
         workflows=[PlanExecutionWorkflow],
-        activities=[probe_binding, probe_state, probe_persist],
+        activities=[
+            probe_admission,
+            probe_admission_heartbeat,
+            probe_admission_release,
+            probe_binding,
+            probe_state,
+            probe_persist,
+            probe_materialize,
+        ],
     ):
         result = await temporal.execute_workflow(
             PlanExecutionWorkflow.run,
@@ -118,5 +178,8 @@ async def test_real_temporal_decodes_legacy_plan_input() -> None:
         )
 
     assert result.state == "COMPLETED"
+    assert ContinuationProbe.admission_calls == 1
+    assert ContinuationProbe.release_calls == 1
     assert ContinuationProbe.binding_calls == 1
     assert ContinuationProbe.persist_calls == 0
+    assert ContinuationProbe.materialize_calls == 1

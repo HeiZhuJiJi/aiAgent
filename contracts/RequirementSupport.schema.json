@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "RequirementRelationType": {
+      "enum": [
+        "INTENDED_TO_SATISFY",
+        "PRODUCED_EVIDENCE_FOR",
+        "VERIFIED_AGAINST"
+      ],
+      "title": "RequirementRelationType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "requirement_id": {
+      "format": "uuid",
+      "title": "Requirement Id",
+      "type": "string"
+    },
+    "plan_revision_id": {
+      "format": "uuid",
+      "title": "Plan Revision Id",
+      "type": "string"
+    },
+    "step_id": {
+      "format": "uuid",
+      "title": "Step Id",
+      "type": "string"
+    },
+    "relation_type": {
+      "$ref": "#/$defs/RequirementRelationType"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "requirement_id",
+    "plan_revision_id",
+    "step_id",
+    "relation_type",
+    "created_at"
+  ],
+  "title": "RequirementSupport",
+  "type": "object"
+}

@@ -100,13 +100,11 @@ services:
         condition: service_healthy
     environment:
       TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+    - ./temporal-namespace.sh:/scripts/temporal-namespace.sh:ro
     entrypoint:
     - /bin/sh
-    - -ec
-    command:
-    - >-
-      temporal operator namespace describe --namespace default >/dev/null 2>&1 ||
-      temporal operator namespace create --namespace default --retention 72h
+    - /scripts/temporal-namespace.sh
   platform-migrate:
     build:
       context: ../..
@@ -129,6 +127,73 @@ services:
         condition: service_healthy
     command: ["alembic", "-c", "mcp_servers/procurement/alembic.ini", "upgrade", "head"]
     restart: "no"
+  embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.3@sha256:ad950d30878eceb72aaf32024d26fa2b1d04a75304fa0b4776b49aa1941fea07
+    command:
+    - --model-id
+    - ${EMBEDDING_SERVICE_MODEL_ID:-BAAI/bge-m3}
+    - --revision
+    - ${EMBEDDING_SERVICE_MODEL_REVISION:-5617a9f61b028005a4858fdac845db406aefb181}
+    - --dtype
+    - float32
+    - --auto-truncate
+    - --max-client-batch-size
+    - "8"
+    ports:
+    - 127.0.0.1:8001:80
+    volumes:
+    - embedding_cache:/data
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - --fail
+      - --silent
+      - http://127.0.0.1:80/health
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: ${EMBEDDING_HEALTH_START_PERIOD:-15m}
+    restart: unless-stopped
+  searxng:
+    image: ghcr.io/searxng/searxng@sha256:2fb0fa85096fe6df5c3ab98ecb4d6e0ee2ef66b8fb96ce6fce0f75b51c4bd90a
+    environment:
+      SEARXNG_BASE_URL: http://searxng:8080/
+      SEARXNG_SECRET: ${SEARXNG_SECRET:-enterprise-agent-local-search}
+    volumes:
+    - ./searxng-settings.yml:/etc/searxng/settings.yml:ro
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -qO-
+      - http://127.0.0.1:8080/healthz
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+  web-provider:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment:
+      SEARXNG_BASE_URL: http://searxng:8080
+    depends_on:
+      searxng:
+        condition: service_healthy
+    command: ["uvicorn", "apps.web_provider.main:app", "--host", "0.0.0.0", "--port", "8003"]
+    ports:
+    - 127.0.0.1:58003:8003
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8003/health', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
   api:
     build:
       context: ../..
@@ -137,7 +202,18 @@ services:
       DATABASE_URL: postgresql+asyncpg://platform:${POSTGRES_PASSWORD}@postgres:5432/platform
       PROCUREMENT_DATABASE_URL: postgresql+asyncpg://procurement:${PROCUREMENT_DB_PASSWORD}@procurement-db:5432/procurement
       TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_TASK_QUEUE: enterprise-agent-runtime
+      # The queue name is a durable compatibility boundary. Renaming it strands
+      # already-started Workflows because Temporal will keep scheduling their
+      # Workflow Tasks on the original queue.
+      TEMPORAL_TASK_QUEUE: ${TEMPORAL_TASK_QUEUE:-enterprise-agent-runtime}
+      REDIS_URL: redis://redis:6379/0
+      ADMISSION_NAMESPACE: enterprise-agent:admission
+      ADMISSION_GLOBAL_TASKS: ${ADMISSION_GLOBAL_TASKS:-32}
+      ADMISSION_WORKSPACE_TASKS: ${ADMISSION_WORKSPACE_TASKS:-4}
+      ADMISSION_MODEL_PROVIDER: ${ADMISSION_MODEL_PROVIDER:-8}
+      ADMISSION_CAPABILITY: ${ADMISSION_CAPABILITY:-16}
+      ADMISSION_MCP: ${ADMISSION_MCP:-8}
+      ADMISSION_LEASE_MS: ${ADMISSION_LEASE_MS:-360000}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: platform
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -148,7 +224,7 @@ services:
       MODEL_NAME: ${MODEL_NAME:-Qwen/Qwen3.8-27B}
       MODEL_API_KEY: ${MODEL_API_KEY:-}
       EMBEDDING_MODE: ${EMBEDDING_MODE:-local}
-      EMBEDDING_BASE_URL: ${EMBEDDING_CONTAINER_BASE_URL:-http://host.docker.internal:8001/v1}
+      EMBEDDING_BASE_URL: ${EMBEDDING_CONTAINER_BASE_URL:-http://embedding:80/v1}
       EMBEDDING_NAME: ${EMBEDDING_NAME:-BAAI/bge-m3}
       EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
       RERANKER_MODE: ${RERANKER_MODE:-local}
@@ -156,7 +232,7 @@ services:
       RERANKER_NAME: ${RERANKER_NAME:-BAAI/bge-reranker-v2-m3}
       RERANKER_API_KEY: ${RERANKER_API_KEY:-}
       WEB_MODE: ${WEB_MODE:-local}
-      WEB_BASE_URL: ${WEB_CONTAINER_BASE_URL:-http://host.docker.internal:8003/v1}
+      WEB_BASE_URL: ${WEB_CONTAINER_BASE_URL:-http://host.docker.internal:58003/v1}
       WEB_API_KEY: ${WEB_API_KEY:-}
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
       OTEL_SERVICE_NAME: enterprise-agent-api
@@ -169,6 +245,10 @@ services:
         condition: service_completed_successfully
       minio:
         condition: service_started
+      embedding:
+        condition: service_healthy
+      web-provider:
+        condition: service_healthy
     command: ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
     ports:
     - 127.0.0.1:58080:8080
@@ -186,10 +266,17 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/backend.Dockerfile
+    init: true
+    stop_signal: SIGINT
     environment:
       <<: *runtime_environment
+      # Drain Workflows created while the Compose default temporarily used a
+      # versioned queue. New work is emitted only to TEMPORAL_TASK_QUEUE.
+      TEMPORAL_LEGACY_TASK_QUEUES: ${TEMPORAL_LEGACY_TASK_QUEUES:-enterprise-agent-runtime-v1}
       OTEL_SERVICE_NAME: enterprise-agent-worker
       WORKER_METRICS_PORT: "9464"
+      KNOWLEDGE_EMBED_BATCH_SIZE: ${KNOWLEDGE_EMBED_BATCH_SIZE:-8}
+      KNOWLEDGE_RERANK_TIMEOUT_SEC: ${KNOWLEDGE_RERANK_TIMEOUT_SEC:-3}
     extra_hosts:
     - host.docker.internal:host-gateway
     depends_on:
@@ -203,6 +290,10 @@ services:
         condition: service_started
       redis:
         condition: service_started
+      embedding:
+        condition: service_healthy
+      web-provider:
+        condition: service_healthy
     command: ["python", "-m", "apps.worker.main"]
     healthcheck:
       test: ["CMD-SHELL", "kill -0 1"]
@@ -214,6 +305,7 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/web.Dockerfile
+    init: true
     depends_on:
       api:
         condition: service_healthy
@@ -258,6 +350,7 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
+    - grafana_data:/var/lib/grafana
     - ../../observability/grafana/provisioning:/etc/grafana/provisioning:ro
     - ../../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
@@ -265,12 +358,13 @@ services:
     - tempo
     - loki
     ports:
-    - 127.0.0.1:53000:3000
+    - 127.0.0.1:${GRAFANA_HOST_PORT:-53000}:3000
     restart: unless-stopped
 volumes:
   postgres_data: null
   procurement_data: null
   minio_data: null
+  embedding_cache: null
   prometheus_data: null
   tempo_data: null
   loki_data: null

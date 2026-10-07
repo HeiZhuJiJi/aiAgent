@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "AgentRecoveryAction": {
+      "enum": [
+        "RETRY",
+        "REPAIR_ANSWER",
+        "RETRIEVE_MORE",
+        "REPLAN",
+        "PARTIAL_ACCEPT",
+        "CLARIFY",
+        "UNAVAILABLE",
+        "FAIL"
+      ],
+      "title": "AgentRecoveryAction",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "action": {
+      "$ref": "#/$defs/AgentRecoveryAction"
+    },
+    "reason": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "failed_node": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Failed Node",
+      "type": "string"
+    },
+    "prohibited_repetitions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Prohibited Repetitions",
+      "type": "array"
+    },
+    "remaining_attempts": {
+      "maximum": 3,
+      "minimum": 0,
+      "title": "Remaining Attempts",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "action",
+    "reason",
+    "failed_node",
+    "remaining_attempts"
+  ],
+  "title": "AgentRecoveryDecision",
+  "type": "object"
+}

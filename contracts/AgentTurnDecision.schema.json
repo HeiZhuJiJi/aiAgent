@@ -1,0 +1,500 @@
+{
+  "$defs": {
+    "AgentExecutionLevel": {
+      "enum": [
+        "INLINE_CHAT",
+        "BOUNDED_QA",
+        "DURABLE_TASK"
+      ],
+      "title": "AgentExecutionLevel",
+      "type": "string"
+    },
+    "AgentInformationSource": {
+      "enum": [
+        "MODEL",
+        "WEB",
+        "RAG",
+        "STRUCTURED_DATA"
+      ],
+      "title": "AgentInformationSource",
+      "type": "string"
+    },
+    "AgentPlannerAction": {
+      "enum": [
+        "RESPOND",
+        "CLARIFY",
+        "EXECUTE"
+      ],
+      "title": "AgentPlannerAction",
+      "type": "string"
+    },
+    "AgentSourcePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "required_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Required Sources",
+          "type": "array"
+        },
+        "preferred_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Preferred Sources",
+          "type": "array"
+        },
+        "fallback_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Fallback Sources",
+          "type": "array"
+        },
+        "forbidden_sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AgentInformationSource"
+          },
+          "maxItems": 4,
+          "title": "Forbidden Sources",
+          "type": "array"
+        }
+      },
+      "title": "AgentSourcePlan",
+      "type": "object"
+    },
+    "AgentSpeechAct": {
+      "enum": [
+        "QUESTION",
+        "FOLLOW_UP",
+        "CORRECTION",
+        "CLARIFICATION",
+        "COMMAND",
+        "SOCIAL"
+      ],
+      "title": "AgentSpeechAct",
+      "type": "string"
+    },
+    "AnswerContract": {
+      "additionalProperties": false,
+      "description": "The user-visible answer shape and minimum evidence needed to satisfy it.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "answer_type": {
+          "enum": [
+            "FACT",
+            "SUMMARY",
+            "LIST",
+            "TIMELINE",
+            "COMPARISON",
+            "EXPLANATION",
+            "FORECAST",
+            "DOCUMENT_SUMMARY",
+            "DOCUMENT_QA"
+          ],
+          "title": "Answer Type",
+          "type": "string"
+        },
+        "required_aspects": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6,
+          "minItems": 1,
+          "title": "Required Aspects",
+          "type": "array"
+        },
+        "completeness": {
+          "enum": [
+            "COMPLETE",
+            "BEST_EFFORT"
+          ],
+          "title": "Completeness",
+          "type": "string"
+        },
+        "freshness": {
+          "enum": [
+            "STABLE",
+            "CURRENT",
+            "HISTORICAL",
+            "SOURCE_BOUND"
+          ],
+          "title": "Freshness",
+          "type": "string"
+        },
+        "minimum_answer_items": {
+          "anyOf": [
+            {
+              "maximum": 8,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum Answer Items"
+        },
+        "maximum_answer_items": {
+          "anyOf": [
+            {
+              "maximum": 8,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Answer Items"
+        },
+        "require_explicit_dates": {
+          "title": "Require Explicit Dates",
+          "type": "boolean"
+        },
+        "minimum_evidence_items": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Minimum Evidence Items",
+          "type": "integer"
+        },
+        "minimum_independent_sources": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Minimum Independent Sources",
+          "type": "integer"
+        },
+        "partial_answer_policy": {
+          "enum": [
+            "ALLOW_SUPPORTED_ONLY",
+            "REQUIRE_COMPLETE"
+          ],
+          "title": "Partial Answer Policy",
+          "type": "string"
+        },
+        "organization": {
+          "enum": [
+            "CONCISE",
+            "BULLETS",
+            "TIMELINE",
+            "COMPARISON",
+            "STRUCTURED_SUMMARY"
+          ],
+          "title": "Organization",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_type",
+        "required_aspects",
+        "completeness",
+        "freshness",
+        "require_explicit_dates",
+        "minimum_evidence_items",
+        "minimum_independent_sources",
+        "partial_answer_policy",
+        "organization"
+      ],
+      "title": "AnswerContract",
+      "type": "object"
+    },
+    "ExecutionDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "execution_level": {
+          "$ref": "#/$defs/AgentExecutionLevel"
+        },
+        "source_plan": {
+          "$ref": "#/$defs/AgentSourcePlan"
+        },
+        "risk": {
+          "$ref": "#/$defs/Risk"
+        },
+        "maximum_tool_steps": {
+          "maximum": 8,
+          "minimum": 0,
+          "title": "Maximum Tool Steps",
+          "type": "integer"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "execution_level",
+        "source_plan",
+        "risk",
+        "maximum_tool_steps",
+        "confidence"
+      ],
+      "title": "ExecutionDecision",
+      "type": "object"
+    },
+    "IntentFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "speech_act": {
+          "$ref": "#/$defs/AgentSpeechAct"
+        },
+        "normalized_question": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Normalized Question",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "References",
+          "type": "array"
+        },
+        "entities": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Entities",
+          "type": "array"
+        },
+        "temporal": {
+          "$ref": "#/$defs/TemporalFrame"
+        },
+        "missing_information": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Missing Information",
+          "type": "array"
+        }
+      },
+      "required": [
+        "speech_act",
+        "normalized_question",
+        "temporal"
+      ],
+      "title": "IntentFrame",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "PlannedToolCall": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "tool_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "purpose": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Arguments",
+          "type": "object"
+        },
+        "risk": {
+          "$ref": "#/$defs/Risk",
+          "default": "READ"
+        }
+      },
+      "required": [
+        "tool_name",
+        "purpose"
+      ],
+      "title": "PlannedToolCall",
+      "type": "object"
+    },
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    },
+    "TemporalFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "direction": {
+          "enum": [
+            "STABLE",
+            "CURRENT",
+            "HISTORICAL",
+            "FUTURE"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "requires_fresh_information": {
+          "title": "Requires Fresh Information",
+          "type": "boolean"
+        },
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
+        },
+        "start_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start At"
+        },
+        "end_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End At"
+        }
+      },
+      "required": [
+        "direction",
+        "requires_fresh_information"
+      ],
+      "title": "TemporalFrame",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "action": {
+      "$ref": "#/$defs/AgentPlannerAction"
+    },
+    "intent": {
+      "$ref": "#/$defs/IntentFrame"
+    },
+    "execution": {
+      "$ref": "#/$defs/ExecutionDecision"
+    },
+    "answer_contract": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AnswerContract"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tool_plan": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PlannedToolCall"
+      },
+      "maxItems": 8,
+      "title": "Tool Plan",
+      "type": "array"
+    },
+    "direct_response": {
+      "anyOf": [
+        {
+          "maxLength": 32000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Direct Response"
+    }
+  },
+  "required": [
+    "action",
+    "intent",
+    "execution"
+  ],
+  "title": "AgentTurnDecision",
+  "type": "object"
+}

@@ -1,13 +1,16 @@
-from collections.abc import Awaitable
+import asyncio
+import os
+from collections.abc import AsyncIterator, Awaitable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any, cast
 from uuid import UUID, uuid4
 
 from redis.asyncio import Redis
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from enterprise_agent.contracts.domain import Contract, FailureCode
+from enterprise_agent.contracts.domain import Contract, FailureCode, TaskState
 from enterprise_agent.domain.states import DomainError
 from enterprise_agent.storage.tables import TaskRow
 
@@ -164,6 +167,128 @@ class RedisAdmissionController:
             lease,
         )
 
+    async def try_acquire_task(
+        self,
+        workspace_id: UUID,
+        *,
+        lease_ms: int = 30_000,
+    ) -> tuple[AdmissionDecision, AdmissionLease | None]:
+        if lease_ms < 100:
+            raise DomainError(FailureCode.VALIDATION_FAILED, "admission lease is too short")
+        scopes = [
+            ("global", self._limits.global_tasks, "global_task_concurrency"),
+            (
+                "workspace:" + str(workspace_id),
+                self._limits.workspace_tasks,
+                "workspace_task_concurrency",
+            ),
+        ]
+        keys = tuple(self._namespace + ":" + item[0] for item in scopes)
+        lease_id = uuid4()
+        raw = await cast(
+            Awaitable[Any],
+            self._redis.eval(
+                ACQUIRE_SCRIPT,
+                len(keys),
+                *keys,
+                str(lease_id),
+                str(lease_ms),
+                *(str(item[1]) for item in scopes),
+            ),
+        )
+        values = list(raw)
+        if int(values[0]) == 0:
+            blocked_index = int(values[1]) - 1
+            return (
+                AdmissionDecision(
+                    allowed=False,
+                    block_reason=scopes[blocked_index][2],
+                ),
+                None,
+            )
+        expires_at_ms = int(values[2])
+        lease = AdmissionLease(
+            lease_id=lease_id,
+            keys=keys,
+            expires_at_ms=expires_at_ms,
+        )
+        return (
+            AdmissionDecision(
+                allowed=True,
+                lease_id=lease_id,
+                expires_at_ms=expires_at_ms,
+            ),
+            lease,
+        )
+
+    async def try_acquire_call(
+        self,
+        workspace_id: UUID,
+        provider: str,
+        capability_id: str,
+        *,
+        is_model: bool = False,
+        is_mcp: bool = False,
+        lease_ms: int = 30_000,
+    ) -> tuple[AdmissionDecision, AdmissionLease | None]:
+        del workspace_id
+        if lease_ms < 100:
+            raise DomainError(FailureCode.VALIDATION_FAILED, "admission lease is too short")
+        scopes: list[tuple[str, int, str]] = [
+            (
+                "capability:" + capability_id,
+                self._limits.capability,
+                "capability_concurrency",
+            ),
+        ]
+        if is_model:
+            scopes.append(
+                (
+                    "model:" + provider,
+                    self._limits.model_provider,
+                    "model_provider_concurrency",
+                )
+            )
+        if is_mcp:
+            scopes.append(("mcp:" + provider, self._limits.mcp, "mcp_concurrency"))
+        keys = tuple(self._namespace + ":" + item[0] for item in scopes)
+        lease_id = uuid4()
+        raw = await cast(
+            Awaitable[Any],
+            self._redis.eval(
+                ACQUIRE_SCRIPT,
+                len(keys),
+                *keys,
+                str(lease_id),
+                str(lease_ms),
+                *(str(item[1]) for item in scopes),
+            ),
+        )
+        values = list(raw)
+        if int(values[0]) == 0:
+            blocked_index = int(values[1]) - 1
+            return (
+                AdmissionDecision(
+                    allowed=False,
+                    block_reason=scopes[blocked_index][2],
+                ),
+                None,
+            )
+        expires_at_ms = int(values[2])
+        lease = AdmissionLease(
+            lease_id=lease_id,
+            keys=keys,
+            expires_at_ms=expires_at_ms,
+        )
+        return (
+            AdmissionDecision(
+                allowed=True,
+                lease_id=lease_id,
+                expires_at_ms=expires_at_ms,
+            ),
+            lease,
+        )
+
     async def heartbeat(self, lease: AdmissionLease, lease_ms: int = 30_000) -> AdmissionLease:
         raw = await cast(
             Awaitable[Any],
@@ -192,6 +317,65 @@ class RedisAdmissionController:
         )
 
 
+def load_admission_controller() -> tuple[Redis, RedisAdmissionController, int]:
+    redis = Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+    limits = AdmissionLimits(
+        global_tasks=int(os.environ.get("ADMISSION_GLOBAL_TASKS", "32")),
+        workspace_tasks=int(os.environ.get("ADMISSION_WORKSPACE_TASKS", "4")),
+        model_provider=int(os.environ.get("ADMISSION_MODEL_PROVIDER", "8")),
+        capability=int(os.environ.get("ADMISSION_CAPABILITY", "16")),
+        mcp=int(os.environ.get("ADMISSION_MCP", "8")),
+    )
+    controller = RedisAdmissionController(
+        redis,
+        limits,
+        os.environ.get("ADMISSION_NAMESPACE", "enterprise-agent:admission"),
+    )
+    return redis, controller, int(os.environ.get("ADMISSION_LEASE_MS", "360000"))
+
+
+@asynccontextmanager
+async def admitted_call(
+    controller: RedisAdmissionController,
+    workspace_id: UUID,
+    provider: str,
+    capability_id: str,
+    *,
+    is_model: bool = False,
+    is_mcp: bool = False,
+    lease_ms: int = 360_000,
+    poll_seconds: float = 0.25,
+    sessions: async_sessionmaker[AsyncSession] | None = None,
+    task_id: UUID | None = None,
+) -> AsyncIterator[AdmissionLease]:
+    if poll_seconds <= 0 or (sessions is None) != (task_id is None):
+        raise ValueError("admission call context is invalid")
+    lease: AdmissionLease | None = None
+    while lease is None:
+        decision, lease = await controller.try_acquire_call(
+            workspace_id,
+            provider,
+            capability_id,
+            is_model=is_model,
+            is_mcp=is_mcp,
+            lease_ms=lease_ms,
+        )
+        if sessions is not None and task_id is not None:
+            async with sessions.begin() as session:
+                await record_schedule_decision(
+                    session,
+                    workspace_id,
+                    task_id,
+                    decision,
+                )
+        if lease is None:
+            await asyncio.sleep(poll_seconds)
+    try:
+        yield lease
+    finally:
+        await controller.release(lease)
+
+
 async def record_schedule_decision(
     session: AsyncSession,
     workspace_id: UUID,
@@ -205,11 +389,19 @@ async def record_schedule_decision(
     )
     if task is None:
         raise DomainError(FailureCode.POLICY_DENIED, "task unavailable")
-    if not decision.allowed and task.state != "READY":
+    admissible_states = {
+        TaskState.READY.value,
+        TaskState.RUNNING.value,
+        TaskState.WAITING_HITL.value,
+        TaskState.PAUSED.value,
+    }
+    if not decision.allowed and task.state not in admissible_states:
         raise DomainError(
             FailureCode.CONSISTENCY_VIOLATION,
-            "blocked task must remain READY",
+            "terminal or unplanned task cannot be admission blocked",
         )
-    task.schedule_block_reason = None if decision.allowed else decision.block_reason
-    task.version += 1
+    block_reason = None if decision.allowed else decision.block_reason
+    if task.schedule_block_reason != block_reason:
+        task.schedule_block_reason = block_reason
+        task.version += 1
     await session.flush()

@@ -11,10 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from enterprise_agent.evaluation.contracts import (
     EvaluationMetrics,
     EvaluationObservation,
+    EvaluationOperationalTotals,
     EvaluationRunView,
     GoldenTask,
 )
-from enterprise_agent.evaluation.runner import aggregate_metrics, load_golden_tasks
+from enterprise_agent.evaluation.runner import (
+    aggregate_metrics,
+    apply_operational_totals,
+    load_golden_tasks,
+)
 from enterprise_agent.storage.tables import (
     AuditRow,
     EvaluationCaseRow,
@@ -52,11 +57,15 @@ async def persist_evaluation_run(
     observations: tuple[EvaluationObservation, ...],
     *,
     suite_path: Path = Path("evaluation/golden_tasks.json"),
+    operational_totals: EvaluationOperationalTotals | None = None,
+    execution_evidence_sha256: str | None = None,
 ) -> EvaluationRunView:
     cases = load_golden_tasks(suite_path)
     if {item.case_id for item in observations} != {item.case_id for item in cases}:
         raise ValueError("evaluation runs must explicitly observe every Golden Task")
     metrics = aggregate_metrics(cases, observations)
+    if operational_totals is not None:
+        metrics = apply_operational_totals(metrics, operational_totals)
     case_rows: dict[str, EvaluationCaseRow] = {}
     case_hashes: list[str] = []
     for case in cases:
@@ -79,7 +88,9 @@ async def persist_evaluation_run(
             )
             session.add(existing)
             await session.flush()
-        elif existing.id != case_id or existing.content_hash != digest or existing.payload != payload:
+        elif (
+            existing.id != case_id or existing.content_hash != digest or existing.payload != payload
+        ):
             raise ValueError("persisted Golden Task differs from the versioned suite")
         case_rows[case.case_id] = existing
         case_hashes.append(digest)
@@ -120,7 +131,11 @@ async def persist_evaluation_run(
             units=metrics.evaluated_cases,
             tokens=metrics.total_tokens or 0,
             cost=metrics.total_cost or 0,
-            detail={"total_cases": metrics.total_cases, "evaluated_case_rate": metrics.evaluated_case_rate},
+            detail={
+                "total_cases": metrics.total_cases,
+                "evaluated_case_rate": metrics.evaluated_case_rate,
+                "execution_evidence_sha256": execution_evidence_sha256,
+            },
         )
     )
     session.add(
@@ -136,6 +151,7 @@ async def persist_evaluation_run(
                 "evaluated_cases": metrics.evaluated_cases,
                 "total_cases": metrics.total_cases,
                 "dataset_hash": dataset_hash,
+                "execution_evidence_sha256": execution_evidence_sha256,
             },
             trace_id=trace_id,
         )

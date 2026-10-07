@@ -1,0 +1,50 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "entity_match": {
+      "title": "Entity Match",
+      "type": "boolean"
+    },
+    "temporal_match": {
+      "title": "Temporal Match",
+      "type": "boolean"
+    },
+    "evidence_support": {
+      "title": "Evidence Support",
+      "type": "boolean"
+    },
+    "authorization": {
+      "title": "Authorization",
+      "type": "boolean"
+    },
+    "operation_certainty": {
+      "enum": [
+        "CERTAIN",
+        "UNKNOWN",
+        "CONFLICTING"
+      ],
+      "title": "Operation Certainty",
+      "type": "string"
+    },
+    "schema_validity": {
+      "title": "Schema Validity",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "entity_match",
+    "temporal_match",
+    "evidence_support",
+    "authorization",
+    "operation_certainty",
+    "schema_validity"
+  ],
+  "title": "VerificationGates",
+  "type": "object"
+}

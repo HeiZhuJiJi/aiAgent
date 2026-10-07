@@ -1,0 +1,141 @@
+{
+  "$defs": {
+    "AgentSpeechAct": {
+      "enum": [
+        "QUESTION",
+        "FOLLOW_UP",
+        "CORRECTION",
+        "CLARIFICATION",
+        "COMMAND",
+        "SOCIAL"
+      ],
+      "title": "AgentSpeechAct",
+      "type": "string"
+    },
+    "TemporalFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "direction": {
+          "enum": [
+            "STABLE",
+            "CURRENT",
+            "HISTORICAL",
+            "FUTURE"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "requires_fresh_information": {
+          "title": "Requires Fresh Information",
+          "type": "boolean"
+        },
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
+        },
+        "start_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start At"
+        },
+        "end_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End At"
+        }
+      },
+      "required": [
+        "direction",
+        "requires_fresh_information"
+      ],
+      "title": "TemporalFrame",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "speech_act": {
+      "$ref": "#/$defs/AgentSpeechAct"
+    },
+    "normalized_question": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Normalized Question",
+      "type": "string"
+    },
+    "references": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "References",
+      "type": "array"
+    },
+    "entities": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Entities",
+      "type": "array"
+    },
+    "temporal": {
+      "$ref": "#/$defs/TemporalFrame"
+    },
+    "missing_information": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6,
+      "title": "Missing Information",
+      "type": "array"
+    }
+  },
+  "required": [
+    "speech_act",
+    "normalized_question",
+    "temporal"
+  ],
+  "title": "IntentFrame",
+  "type": "object"
+}

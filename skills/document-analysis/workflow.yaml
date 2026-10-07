@@ -1,0 +1,37 @@
+steps:
+  - step_key: retrieve-selected-document
+    objective: "Retrieve evidence only from the permitted knowledge scope: the selected immutable document, or active workspace knowledge when no document is selected."
+    dependencies: []
+    capability_requirements:
+      - capability_id: knowledge.hybrid_search
+        version_range: ">=1,<2"
+    expected_output: Relevant document Evidence with immutable versions and locators
+    success_criteria: [Every retained hit belongs to the permitted knowledge scope]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 1
+  - step_key: synthesize-document-answer
+    objective: Answer the user's question using only the permitted knowledge Evidence.
+    dependencies: [retrieve-selected-document]
+    capability_requirements:
+      - capability_id: model.structured_output
+        version_range: ">=1,<2"
+    expected_output: Natural grounded answer and Claims
+    success_criteria: [Every factual Claim cites permitted document Evidence]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: review-document-answer
+    objective: Verify knowledge scope, document versions, citations, dates, and numeric support.
+    dependencies: [synthesize-document-answer]
+    capability_requirements:
+      - capability_id: runtime.review
+        version_range: ">=1,<2"
+    expected_output: Accepted knowledge-grounded answer review
+    success_criteria: [No unsupported material Claim remains]
+    risk_hint: READ
+    execution_mode: REVIEW
+    parallelizable: false
+    max_attempts: 2

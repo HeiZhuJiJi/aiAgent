@@ -3,8 +3,10 @@ from pathlib import Path
 
 from enterprise_agent.evaluation.contracts import (
     AblationPair,
+    EvaluationExecutionManifest,
     EvaluationMetrics,
     EvaluationObservation,
+    EvaluationOperationalTotals,
     GoldenTask,
 )
 
@@ -19,10 +21,37 @@ def load_golden_tasks(path: Path) -> tuple[GoldenTask, ...]:
 
 
 def load_ablation_pairs(path: Path) -> tuple[AblationPair, ...]:
-    values = tuple(AblationPair.model_validate(item) for item in json.loads(path.read_text("utf-8")))
+    values = tuple(
+        AblationPair.model_validate(item) for item in json.loads(path.read_text("utf-8"))
+    )
     if len(values) != 6 or len({item.ablation_id for item in values}) != 6:
         raise ValueError("the frozen evaluation suite requires six unique ablation pairs")
     return values
+
+
+def load_execution_manifest(
+    path: Path, cases: tuple[GoldenTask, ...]
+) -> EvaluationExecutionManifest:
+    manifest = EvaluationExecutionManifest.model_validate(json.loads(path.read_text("utf-8")))
+    case_ids = {item.case_id for item in cases}
+    binding_ids = [item.case_id for item in manifest.bindings]
+    if len(set(binding_ids)) != len(binding_ids):
+        raise ValueError("the evaluation execution manifest contains duplicate case bindings")
+    if set(binding_ids) != case_ids:
+        missing = sorted(case_ids - set(binding_ids))
+        unknown = sorted(set(binding_ids) - case_ids)
+        raise ValueError(
+            f"execution manifest coverage mismatch: missing={missing}, unknown={unknown}"
+        )
+    invalid = sorted(
+        node
+        for binding in manifest.bindings
+        for node in binding.pytest_nodes
+        if not node.startswith("tests/") or "::test_" not in node
+    )
+    if invalid:
+        raise ValueError(f"execution manifest contains invalid pytest nodes: {invalid}")
+    return manifest
 
 
 def _boolean_rate(values: list[bool]) -> float | None:
@@ -32,6 +61,52 @@ def _boolean_rate(values: list[bool]) -> float | None:
 def _ratio(numerators: list[int], denominators: list[int]) -> float | None:
     denominator = sum(denominators)
     return None if denominator == 0 else sum(numerators) / denominator
+
+
+def _percentile(values: list[float], percentile: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, int(percentile * len(ordered) + 0.999999) - 1))
+    return ordered[index]
+
+
+def apply_operational_totals(
+    metrics: EvaluationMetrics, totals: EvaluationOperationalTotals
+) -> EvaluationMetrics:
+    def ratio(numerator: int | None, denominator: int | None) -> float | None:
+        if numerator is None or denominator is None or denominator == 0:
+            return None
+        return numerator / denominator
+
+    return metrics.model_copy(
+        update={
+            "evidence_coverage": ratio(totals.evidence_covered, totals.evidence_required),
+            "claim_provenance_correctness": ratio(
+                totals.claims_provenance_correct, totals.claims_total
+            ),
+            "tool_success_rate": ratio(totals.tool_succeeded, totals.tool_executions),
+            "retry_rate": ratio(totals.retried_steps, totals.steps_attempted),
+            "total_tokens": totals.tokens,
+            "total_cost": totals.cost,
+            "total_tool_calls": totals.tool_calls,
+            "total_tool_executions": totals.tool_executions,
+            "total_tool_succeeded": totals.tool_succeeded,
+            "total_tool_denied": totals.tool_denied,
+            "total_step_attempts": totals.step_attempts,
+            "total_steps_attempted": totals.steps_attempted,
+            "total_retried_steps": totals.retried_steps,
+            "total_retries": totals.retries,
+            "total_replans": totals.replans,
+            "total_replans_applied": totals.replans_applied,
+            "total_replans_aborted": totals.replans_aborted,
+            "total_hitl": totals.hitl,
+            "total_hitl_approved": totals.hitl_approved,
+            "total_hitl_rejected": totals.hitl_rejected,
+            "total_hitl_expired": totals.hitl_expired,
+            "total_failure_recoveries": totals.failure_recoveries,
+        }
+    )
 
 
 def aggregate_metrics(
@@ -73,10 +148,18 @@ def aggregate_metrics(
         for item in observed
         if item.duplicate_side_effects is not None and item.side_effects_total is not None
     ]
-    policy_values = [item.policy_violations for item in observed if item.policy_violations is not None]
+    policy_values = [
+        item.policy_violations for item in observed if item.policy_violations is not None
+    ]
     latencies = [item.latency_ms for item in observed if item.latency_ms is not None]
     tokens = [item.tokens for item in observed if item.tokens is not None]
     costs = [item.cost for item in observed if item.cost is not None]
+    tool_calls = [item.tool_call_count for item in observed if item.tool_call_count is not None]
+    replans = [item.replan_count for item in observed if item.replan_count is not None]
+    hitl = [item.hitl_count for item in observed if item.hitl_count is not None]
+    recoveries = [
+        item.failure_recovery_count for item in observed if item.failure_recovery_count is not None
+    ]
     return EvaluationMetrics(
         total_cases=len(cases),
         evaluated_cases=len(observed),
@@ -103,6 +186,13 @@ def aggregate_metrics(
         hitl_accuracy=_boolean_rate(booleans("hitl_correct")),
         replan_success_rate=_boolean_rate(booleans("replan_success")),
         mean_latency_ms=None if not latencies else sum(latencies) / len(latencies),
+        p50_latency_ms=_percentile(latencies, 0.50),
+        p95_latency_ms=_percentile(latencies, 0.95),
+        max_latency_ms=None if not latencies else max(latencies),
         total_tokens=None if not tokens else sum(tokens),
         total_cost=None if not costs else sum(costs),
+        total_tool_calls=None if not tool_calls else sum(tool_calls),
+        total_replans=None if not replans else sum(replans),
+        total_hitl=None if not hitl else sum(hitl),
+        total_failure_recoveries=None if not recoveries else sum(recoveries),
     )

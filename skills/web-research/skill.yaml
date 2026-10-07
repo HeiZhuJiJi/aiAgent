@@ -1,0 +1,11 @@
+name: web-research
+version: 1.0.1
+description: Governed general web research for current-information conversations.
+runtime_contract: 1
+dependencies:
+  - capability_id: web.search
+    version_range: ">=1,<2"
+  - capability_id: model.structured_output
+    version_range: ">=1,<2"
+  - capability_id: runtime.review
+    version_range: ">=1,<2"

@@ -1,0 +1,134 @@
+{
+  "$defs": {
+    "DeliveryDecisionType": {
+      "enum": [
+        "FULL_ANSWER",
+        "PARTIAL_ANSWER",
+        "CLARIFICATION_REQUIRED",
+        "UNAVAILABLE",
+        "BLOCKED"
+      ],
+      "title": "DeliveryDecisionType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "completion_snapshot_id": {
+      "format": "uuid",
+      "title": "Completion Snapshot Id",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/DeliveryDecisionType"
+    },
+    "included_claim_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Included Claim Ids",
+      "type": "array"
+    },
+    "excluded_claim_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Excluded Claim Ids",
+      "type": "array"
+    },
+    "unresolved_requirement_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Unresolved Requirement Ids",
+      "type": "array"
+    },
+    "reason_codes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "disclosure": {
+      "default": "",
+      "title": "Disclosure",
+      "type": "string"
+    },
+    "policy_version": {
+      "minLength": 1,
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "verification_ref": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Verification Ref"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "supersedes_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes Id"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "completion_snapshot_id",
+    "decision",
+    "policy_version",
+    "created_at"
+  ],
+  "title": "DeliveryDecision",
+  "type": "object"
+}

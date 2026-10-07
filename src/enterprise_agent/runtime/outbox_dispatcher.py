@@ -1,5 +1,6 @@
 import asyncio
 import os
+from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
 
@@ -131,10 +132,18 @@ async def dispatch_once(
     client: Client,
     worker_id: str,
     workspace_id: UUID | None = None,
+    after_workspace_id: UUID | None = None,
+    allowed_task_queues: Sequence[str] | None = None,
     publisher: Publisher | None = None,
 ) -> OutboxLease | None:
     async with sessions.begin() as session:
-        lease = await claim_next(session, worker_id, workspace_id=workspace_id)
+        lease = await claim_next(
+            session,
+            worker_id,
+            workspace_id=workspace_id,
+            after_workspace_id=after_workspace_id,
+            allowed_task_queues=allowed_task_queues,
+        )
     if lease is None:
         return None
     try:
@@ -148,18 +157,29 @@ async def dispatch_once(
     return lease
 
 
-async def run_outbox_dispatcher(client: Client) -> None:
+async def run_outbox_dispatcher(
+    client: Client, allowed_task_queues: Sequence[str] | None = None
+) -> None:
     engine = create_async_engine(os.environ["DATABASE_URL"])
     sessions = async_sessionmaker(engine, expire_on_commit=False)
     worker_id = os.environ.get("OUTBOX_WORKER_ID", "temporal-worker-outbox")
+    last_workspace_id: UUID | None = None
     try:
         while True:
             try:
-                lease = await dispatch_once(sessions, client, worker_id)
+                lease = await dispatch_once(
+                    sessions,
+                    client,
+                    worker_id,
+                    after_workspace_id=last_workspace_id,
+                    allowed_task_queues=allowed_task_queues,
+                )
             except Exception:  # noqa: BLE001 - dispatcher isolates one external publish failure
                 await asyncio.sleep(1)
                 continue
             if lease is None:
                 await asyncio.sleep(0.25)
+            else:
+                last_workspace_id = lease.workspace_id
     finally:
         await engine.dispose()

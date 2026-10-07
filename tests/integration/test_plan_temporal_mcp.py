@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 import httpx
 from dotenv import dotenv_values
 from minio import Minio
+from redis.asyncio import Redis
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from temporalio.client import Client
@@ -16,9 +17,10 @@ from temporalio.service import RPCError, RPCStatusCode
 from apps.api.main import create_app
 from enterprise_agent.procurement.demo import seed_demo_suppliers
 from enterprise_agent.procurement.service import AdmissionRow
+from enterprise_agent.runtime.admission import AdmissionLimits, RedisAdmissionController
 from enterprise_agent.runtime.outbox_dispatcher import dispatch_once
 from enterprise_agent.storage.skills import SkillArchiveStore
-from enterprise_agent.storage.tables import OutboxEventRow
+from enterprise_agent.storage.tables import OutboxEventRow, TaskRow
 from tests.failure.test_worker_crash import start_worker
 from tests.integration.test_api_identity import register_and_login
 from tests.integration.test_skill_planner import supplier_skill_archive
@@ -88,7 +90,16 @@ def admission_skill_archive() -> bytes:
 
 async def test_outbox_temporal_plan_executes_real_governed_mcp_step(monkeypatch) -> None:
     task_queue = "plan-mcp-" + str(uuid4())
+    admission_namespace = "test:plan-admission:" + str(uuid4())
     monkeypatch.setenv("TEMPORAL_TASK_QUEUE", task_queue)
+    monkeypatch.setenv("REDIS_URL", "redis://127.0.0.1:56379/0")
+    monkeypatch.setenv("ADMISSION_NAMESPACE", admission_namespace)
+    monkeypatch.setenv("ADMISSION_GLOBAL_TASKS", "8")
+    monkeypatch.setenv("ADMISSION_WORKSPACE_TASKS", "1")
+    monkeypatch.setenv("ADMISSION_MODEL_PROVIDER", "8")
+    monkeypatch.setenv("ADMISSION_CAPABILITY", "8")
+    monkeypatch.setenv("ADMISSION_MCP", "8")
+    monkeypatch.setenv("ADMISSION_LEASE_MS", "60000")
     password = dotenv_values(".env").get("MINIO_ROOT_PASSWORD")
     assert password
     store = SkillArchiveStore(
@@ -187,17 +198,54 @@ async def test_outbox_temporal_plan_executes_real_governed_mcp_step(monkeypatch)
         )
         assert created.status_code == 201
         task_id = created.json()["task_id"]
-        published = await dispatch_once(
-            app.state.sessions,
-            temporal,
-            "plan-execution-publisher",
-            workspace_id,
+        redis = Redis.from_url(
+            "redis://127.0.0.1:56379/0",
+            decode_responses=True,
         )
-        assert published is not None
-        assert published.event_type == "task.execution.requested"
-        handle = temporal.get_workflow_handle("task-" + task_id)
-        worker = start_worker(task_queue)
+        admission = RedisAdmissionController(
+            redis,
+            AdmissionLimits(
+                global_tasks=8,
+                workspace_tasks=1,
+                model_provider=8,
+                capability=8,
+                mcp=8,
+            ),
+            admission_namespace,
+        )
+        blocked, blocker_lease = await admission.try_acquire_task(
+            workspace_id,
+            lease_ms=60_000,
+        )
+        assert blocked.allowed and blocker_lease is not None
         try:
+            published = await dispatch_once(
+                app.state.sessions,
+                temporal,
+                "plan-execution-publisher",
+                workspace_id,
+            )
+            assert published is not None
+            assert published.event_type == "task.execution.requested"
+            handle = temporal.get_workflow_handle("task-" + task_id)
+            worker = start_worker(task_queue)
+            for _ in range(100):
+                async with app.state.sessions() as session:
+                    canonical = await session.get(TaskRow, UUID(task_id))
+                    if (
+                        canonical is not None
+                        and canonical.state == "READY"
+                        and canonical.schedule_block_reason
+                        == "workspace_task_concurrency"
+                    ):
+                        break
+                await asyncio.sleep(0.1)
+            else:
+                raise AssertionError(
+                    "admission-blocked Plan did not remain READY with a reason"
+                )
+            await admission.release(blocker_lease)
+            blocker_lease = None
             result = await asyncio.wait_for(handle.result(), timeout=30)
             assert result["state"] == "COMPLETED"
             task = await client.get(
@@ -213,9 +261,18 @@ async def test_outbox_temporal_plan_executes_real_governed_mcp_step(monkeypatch)
                 headers=owner,
             )
             assert task.json()["state"] == "COMPLETED"
+            async with app.state.sessions() as session:
+                canonical = await session.get(TaskRow, UUID(task_id))
+                assert canonical is not None
+                assert canonical.schedule_block_reason is None
             assert [item["state"] for item in attempts.json()] == ["SUCCEEDED"]
             assert evidence.json()[0]["source_id"] == "procurement.get_supplier_profile"
             assert supplier.profile["legal_name"] in evidence.json()[0]["content"]
+            assert await redis.zcard(admission_namespace + ":global") == 0
+            assert (
+                await redis.zcard(admission_namespace + ":workspace:" + str(workspace_id))
+                == 0
+            )
             completed = True
         finally:
             if worker is not None and worker.poll() is None:
@@ -226,6 +283,12 @@ async def test_outbox_temporal_plan_executes_real_governed_mcp_step(monkeypatch)
                     await handle.terminate("plan MCP test cleanup")
                 except RPCError:
                     pass
+            if blocker_lease is not None:
+                await admission.release(blocker_lease)
+            keys = [key async for key in redis.scan_iter(match=admission_namespace + ":*")]
+            if keys:
+                await redis.delete(*keys)
+            await redis.aclose()
     await procurement_engine.dispose()
 
 

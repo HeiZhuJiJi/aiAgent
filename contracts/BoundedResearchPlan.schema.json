@@ -1,0 +1,292 @@
+{
+  "$defs": {
+    "AnswerContract": {
+      "additionalProperties": false,
+      "description": "The user-visible answer shape and minimum evidence needed to satisfy it.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "answer_type": {
+          "enum": [
+            "FACT",
+            "SUMMARY",
+            "LIST",
+            "TIMELINE",
+            "COMPARISON",
+            "EXPLANATION",
+            "FORECAST",
+            "DOCUMENT_SUMMARY",
+            "DOCUMENT_QA"
+          ],
+          "title": "Answer Type",
+          "type": "string"
+        },
+        "required_aspects": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6,
+          "minItems": 1,
+          "title": "Required Aspects",
+          "type": "array"
+        },
+        "completeness": {
+          "enum": [
+            "COMPLETE",
+            "BEST_EFFORT"
+          ],
+          "title": "Completeness",
+          "type": "string"
+        },
+        "freshness": {
+          "enum": [
+            "STABLE",
+            "CURRENT",
+            "HISTORICAL",
+            "SOURCE_BOUND"
+          ],
+          "title": "Freshness",
+          "type": "string"
+        },
+        "minimum_answer_items": {
+          "anyOf": [
+            {
+              "maximum": 8,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum Answer Items"
+        },
+        "maximum_answer_items": {
+          "anyOf": [
+            {
+              "maximum": 8,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Answer Items"
+        },
+        "require_explicit_dates": {
+          "title": "Require Explicit Dates",
+          "type": "boolean"
+        },
+        "minimum_evidence_items": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Minimum Evidence Items",
+          "type": "integer"
+        },
+        "minimum_independent_sources": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Minimum Independent Sources",
+          "type": "integer"
+        },
+        "partial_answer_policy": {
+          "enum": [
+            "ALLOW_SUPPORTED_ONLY",
+            "REQUIRE_COMPLETE"
+          ],
+          "title": "Partial Answer Policy",
+          "type": "string"
+        },
+        "organization": {
+          "enum": [
+            "CONCISE",
+            "BULLETS",
+            "TIMELINE",
+            "COMPARISON",
+            "STRUCTURED_SUMMARY"
+          ],
+          "title": "Organization",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_type",
+        "required_aspects",
+        "completeness",
+        "freshness",
+        "require_explicit_dates",
+        "minimum_evidence_items",
+        "minimum_independent_sources",
+        "partial_answer_policy",
+        "organization"
+      ],
+      "title": "AnswerContract",
+      "type": "object"
+    },
+    "SourcePlan": {
+      "additionalProperties": false,
+      "description": "Bounded evidence-source priorities, never executable provider instructions.",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "required_sources": {
+          "items": {
+            "enum": [
+              "PUBLIC_WEB",
+              "SELECTED_DOCUMENT",
+              "WORKSPACE_KNOWLEDGE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "title": "Required Sources",
+          "type": "array"
+        },
+        "preferred_sources": {
+          "default": [],
+          "items": {
+            "enum": [
+              "STRUCTURED_DATA",
+              "OFFICIAL_OR_FIRST_PARTY",
+              "INDEPENDENT_MEDIA",
+              "ACADEMIC",
+              "SELECTED_DOCUMENT",
+              "WORKSPACE_KNOWLEDGE",
+              "GENERAL_WEB",
+              "USER_GENERATED",
+              "PARAMETRIC_KNOWLEDGE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Preferred Sources",
+          "type": "array"
+        },
+        "fallback_sources": {
+          "default": [],
+          "items": {
+            "enum": [
+              "STRUCTURED_DATA",
+              "OFFICIAL_OR_FIRST_PARTY",
+              "INDEPENDENT_MEDIA",
+              "ACADEMIC",
+              "SELECTED_DOCUMENT",
+              "WORKSPACE_KNOWLEDGE",
+              "GENERAL_WEB",
+              "USER_GENERATED",
+              "PARAMETRIC_KNOWLEDGE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Fallback Sources",
+          "type": "array"
+        },
+        "forbidden_sources": {
+          "default": [],
+          "items": {
+            "enum": [
+              "STRUCTURED_DATA",
+              "OFFICIAL_OR_FIRST_PARTY",
+              "INDEPENDENT_MEDIA",
+              "ACADEMIC",
+              "SELECTED_DOCUMENT",
+              "WORKSPACE_KNOWLEDGE",
+              "GENERAL_WEB",
+              "USER_GENERATED",
+              "PARAMETRIC_KNOWLEDGE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Forbidden Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required_sources"
+      ],
+      "title": "SourcePlan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A non-executable, bounded plan for retrieval and grounded answer composition.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "entity_scope": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6,
+      "title": "Entity Scope",
+      "type": "array"
+    },
+    "entity_aliases": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "maxProperties": 6,
+      "title": "Entity Aliases",
+      "type": "object"
+    },
+    "web_queries": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "title": "Web Queries",
+      "type": "array"
+    },
+    "retrieval_queries": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 3,
+      "title": "Retrieval Queries",
+      "type": "array"
+    },
+    "source_plan": {
+      "$ref": "#/$defs/SourcePlan"
+    },
+    "result_limit": {
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Result Limit",
+      "type": "integer"
+    },
+    "answer_contract": {
+      "$ref": "#/$defs/AnswerContract"
+    }
+  },
+  "required": [
+    "source_plan",
+    "result_limit",
+    "answer_contract"
+  ],
+  "title": "BoundedResearchPlan",
+  "type": "object"
+}

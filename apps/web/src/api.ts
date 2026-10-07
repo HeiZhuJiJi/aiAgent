@@ -13,6 +13,91 @@ export type Message = {
   role: "SYSTEM" | "USER" | "ASSISTANT"
   content: string
   created_at: string
+  turn_id?: string | null
+  turn_state?: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED" | "SUPERSEDED" | null
+  turn_outcome_status?:
+    | "ANSWERED"
+    | "PARTIALLY_ANSWERED"
+    | "CLARIFICATION_REQUIRED"
+    | "UNAVAILABLE"
+    | "FAILED"
+    | null
+  attachment?: {
+    ingestion_id: string
+    document_version_id: string
+    name: string
+    media_type: string
+  } | null
+}
+export type ResearchSource = "PUBLIC_WEB" | "SELECTED_DOCUMENT" | "WORKSPACE_KNOWLEDGE"
+export type ResearchSourceClass =
+  | "STRUCTURED_DATA"
+  | "OFFICIAL_OR_FIRST_PARTY"
+  | "INDEPENDENT_MEDIA"
+  | "ACADEMIC"
+  | "SELECTED_DOCUMENT"
+  | "WORKSPACE_KNOWLEDGE"
+  | "GENERAL_WEB"
+  | "USER_GENERATED"
+  | "PARAMETRIC_KNOWLEDGE"
+export type SourcePlan = {
+  required_sources: ResearchSource[]
+  preferred_sources: ResearchSourceClass[]
+  fallback_sources: ResearchSourceClass[]
+  forbidden_sources: ResearchSourceClass[]
+}
+export type AnswerContract = {
+  answer_type:
+    | "FACT"
+    | "SUMMARY"
+    | "LIST"
+    | "TIMELINE"
+    | "COMPARISON"
+    | "EXPLANATION"
+    | "FORECAST"
+    | "DOCUMENT_SUMMARY"
+    | "DOCUMENT_QA"
+  required_aspects: string[]
+  completeness: "COMPLETE" | "BEST_EFFORT"
+  freshness: "STABLE" | "CURRENT" | "HISTORICAL" | "SOURCE_BOUND"
+  minimum_answer_items: number | null
+  maximum_answer_items: number | null
+  require_explicit_dates: boolean
+  minimum_evidence_items: number
+  minimum_independent_sources: number
+  partial_answer_policy: "ALLOW_SUPPORTED_ONLY" | "REQUIRE_COMPLETE"
+  organization: "CONCISE" | "BULLETS" | "TIMELINE" | "COMPARISON" | "STRUCTURED_SUMMARY"
+}
+export type BoundedResearchPlan = {
+  web_queries: string[]
+  retrieval_queries: string[]
+  source_plan: SourcePlan
+  result_limit: number
+  answer_contract: AnswerContract
+}
+export type ChatRouteDecision = {
+  route: "DIRECT" | "WEB" | "RAG" | "MIXED" | "DURABLE"
+  resolved_content: string
+  search_query: string | null
+  search_queries: string[]
+  search_limit: number
+  reason:
+    | "EXPLICIT_WEB"
+    | "CURRENT_INFORMATION"
+    | "SELECTED_DOCUMENT"
+    | "WORKSPACE_KNOWLEDGE"
+    | "MIXED_EVIDENCE"
+    | "DIRECT_REQUEST"
+    | "MISSING_CONTEXT"
+    | "MODEL_ROUTER"
+    | "MODEL_CLARIFICATION"
+    | "AGENT_PLANNER"
+    | "WEB_DISABLED"
+  confidence: number
+  context_required: boolean
+  context_resolved: boolean
+  research_plan: BoundedResearchPlan | null
+  agent_decision: unknown | null
 }
 export type Task = {
   task_id: string
@@ -21,6 +106,53 @@ export type Task = {
   version: number
   execution_snapshot_id: string
   goal: { goal: string; constraints: string[]; deliverables: string[] }
+}
+export type DeliveryDecision = {
+  id: string
+  workspace_id: string
+  task_id: string
+  completion_snapshot_id: string
+  decision: "FULL_ANSWER" | "PARTIAL_ANSWER" | "CLARIFICATION_REQUIRED" | "UNAVAILABLE" | "BLOCKED"
+  included_claim_ids: string[]
+  excluded_claim_ids: string[]
+  unresolved_requirement_ids: string[]
+  reason_codes: string[]
+  disclosure: string
+  policy_version: string
+  verification_ref: string | null
+  created_at: string
+  supersedes_id: string | null
+}
+export type TaskCompletion = {
+  workspace_id: string
+  task_id: string
+  execution_status: string
+  completion_status: "COMPLETE" | "PARTIAL" | "UNAVAILABLE"
+  delivery_decision: DeliveryDecision | null
+  unresolved_requirement_ids: string[]
+  disclosure: string
+}
+export type CreateTaskInput = {
+  goal: string
+  constraints: string[]
+  deliverables: string[]
+  workspace_id: string
+  time_budget_sec: number
+  token_budget: number
+  cost_budget: number
+  requested_skill?: string
+  user_context: string
+}
+export type ResearchTurnCreateInput = {
+  workspace_id: string
+  conversation_id: string
+  user_message_id: string
+  content: string
+  goal: CreateTaskInput
+}
+export type ResearchTurn = {
+  user_message: Message
+  task: Task
 }
 export type Plan = {
   plan_id: string
@@ -140,9 +272,18 @@ export type KnowledgeIngestion = {
   state: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED"
   version: number
   document_version_id: string | null
+  document_version: number | null
   safe_error: string | null
   created_at: string
   completed_at: string | null
+}
+export type KnowledgeDocumentPreview = {
+  ingestion_id: string
+  document_version_id: string
+  name: string
+  media_type: string
+  content: string
+  truncated: boolean
 }
 export type SkillInstallation = {
   installation_id: string
@@ -195,6 +336,7 @@ export type ModelConfiguration = {
   external: boolean
   has_secret: boolean
   enabled: boolean
+  superseded: boolean
   version: number
   created_at: string
 }
@@ -269,11 +411,42 @@ export class ApiClient {
       body: JSON.stringify({ message_id: crypto.randomUUID(), workspace_id, content }),
     })
   }
+  taskResultMessage(workspace_id: string, conversation: string, task: string) {
+    return this.request<Message>(`/conversations/${conversation}/task-results/${task}`, {
+      method: "POST",
+      body: JSON.stringify({ workspace_id }),
+    })
+  }
+  deleteConversation(item: Conversation) {
+    return this.request<void>(`/conversations/${item.conversation_id}`, {
+      method: "DELETE",
+      body: JSON.stringify({
+        workspace_id: item.workspace_id,
+        expected_version: item.version,
+      }),
+    })
+  }
+  routeChat(value: {
+    workspace_id: string
+    conversation_id: string
+    user_message_id: string
+    content: string
+    web_mode: "AUTO" | "FORCE" | "OFF"
+    document_version_id?: string
+    model_config_id?: string
+  }) {
+    return this.request<ChatRouteDecision>("/chat/route", {
+      method: "POST",
+      body: JSON.stringify(value),
+    })
+  }
+
   async streamChat(
     value: {
       workspace_id: string
       conversation_id: string
       model_config_id: string
+      user_message_id: string
       content: string
     },
     onToken: (content: string) => void,
@@ -284,11 +457,7 @@ export class ApiClient {
         "Content-Type": "application/json",
         ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
       },
-      body: JSON.stringify({
-        ...value,
-        user_message_id: crypto.randomUUID(),
-        assistant_message_id: crypto.randomUUID(),
-      }),
+      body: JSON.stringify(value),
     })
     if (!response.ok) {
       const body = (await response.json().catch(() => ({}))) as ApiError
@@ -325,6 +494,32 @@ export class ApiClient {
     if (!completed) throw new Error("模型流未正常完成")
   }
   tasks(workspace: string) { return this.request<Task[]>(`/workspaces/${workspace}/tasks`) }
+  task(workspace: string, task: string) {
+    return this.request<Task>(`/workspaces/${workspace}/tasks/${task}`)
+  }
+  taskCompletion(workspace: string, task: string) {
+    return this.request<TaskCompletion>(
+      "/workspaces/" + workspace + "/tasks/" + task + "/completion",
+    )
+  }
+  createTask(value: CreateTaskInput) {
+    return this.request<Task>("/tasks", {
+      method: "POST",
+      body: JSON.stringify(value),
+    })
+  }
+  createResearchTurn(value: ResearchTurnCreateInput) {
+    return this.request<ResearchTurn>("/research-turns", {
+      method: "POST",
+      body: JSON.stringify(value),
+    })
+  }
+  createAgentTaskTurn(value: ResearchTurnCreateInput) {
+    return this.request<ResearchTurn>("/agent-task-turns", {
+      method: "POST",
+      body: JSON.stringify(value),
+    })
+  }
   plans(workspace: string, task: string) {
     return this.request<Plan[]>(`/workspaces/${workspace}/tasks/${task}/plans`)
   }
@@ -357,17 +552,48 @@ export class ApiClient {
   knowledge(workspace: string) {
     return this.request<KnowledgeIngestion[]>(`/knowledge/documents?workspace_id=${workspace}`)
   }
-  uploadKnowledge(workspace: string, file: File) {
+  knowledgePreview(workspace: string, ingestion: string) {
+    return this.request<KnowledgeDocumentPreview>(
+      `/knowledge/documents/${ingestion}/preview?workspace_id=${workspace}`,
+    )
+  }
+  uploadKnowledge(
+    workspace: string,
+    file: File,
+    documentId: string = crypto.randomUUID(),
+    name: string = file.name,
+  ) {
     const query = new URLSearchParams({
       workspace_id: workspace,
-      document_id: crypto.randomUUID(),
-      name: file.name,
+      document_id: documentId,
+      name,
     })
     return this.request<KnowledgeIngestion>(`/knowledge/documents?${query}`, {
       method: "POST",
       body: file,
       headers: { "Content-Type": file.type || "application/octet-stream" },
     })
+  }
+  deleteKnowledge(item: KnowledgeIngestion) {
+    return this.request<void>(`/knowledge/documents/${item.document_id}`, {
+      method: "DELETE",
+      body: JSON.stringify({
+        workspace_id: item.workspace_id,
+        expected_version: item.version,
+      }),
+    })
+  }
+  retryKnowledge(item: KnowledgeIngestion) {
+    return this.request<KnowledgeIngestion>(
+      `/knowledge/documents/${item.ingestion_id}/retry`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          workspace_id: item.workspace_id,
+          expected_version: item.version,
+        }),
+      },
+    )
   }
   skills(workspace: string) {
     return this.request<SkillInstallation[]>(`/skills?workspace_id=${workspace}`)
@@ -427,6 +653,30 @@ export class ApiClient {
     return this.request<ModelConfiguration>("/models", {
       method: "POST",
       body: JSON.stringify({ config_id: crypto.randomUUID(), ...value }),
+    })
+  }
+  updateModel(
+    config: string,
+    value: {
+      workspace_id: string
+      expected_version: number
+      kind: ModelConfiguration["kind"]
+      provider: ModelConfiguration["provider"]
+      base_url: string
+      model_name: string
+      external: boolean
+      api_key?: string
+    },
+  ) {
+    return this.request<ModelConfiguration>(`/models/${config}`, {
+      method: "PUT",
+      body: JSON.stringify(value),
+    })
+  }
+  setModelEnabled(workspace_id: string, item: ModelConfiguration, enabled: boolean) {
+    return this.request<ModelConfiguration>(`/models/${item.config_id}/state`, {
+      method: "POST",
+      body: JSON.stringify({ workspace_id, expected_version: item.version, enabled }),
     })
   }
   probeModel(workspace: string, config: string) {

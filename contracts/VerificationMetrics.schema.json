@@ -1,0 +1,50 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "completeness": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Completeness",
+      "type": "number"
+    },
+    "freshness": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Freshness",
+      "type": "number"
+    },
+    "source_quality": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Source Quality",
+      "type": "number"
+    },
+    "relevance": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Relevance",
+      "type": "number"
+    },
+    "redundancy": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Redundancy",
+      "type": "number"
+    }
+  },
+  "required": [
+    "completeness",
+    "freshness",
+    "source_quality",
+    "relevance",
+    "redundancy"
+  ],
+  "title": "VerificationMetrics",
+  "type": "object"
+}

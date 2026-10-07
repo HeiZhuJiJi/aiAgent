@@ -1,0 +1,37 @@
+steps:
+  - step_key: search-web
+    objective: Search the live public web for evidence relevant to the user's question.
+    dependencies: []
+    capability_requirements:
+      - capability_id: web.search
+        version_range: ">=1,<2"
+    expected_output: Current public web Evidence with source URLs and content hashes
+    success_criteria: [At least one relevant public source is retained as Evidence]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 1
+  - step_key: synthesize-answer
+    objective: Answer the user's question using only the collected web Evidence.
+    dependencies: [search-web]
+    capability_requirements:
+      - capability_id: model.structured_output
+        version_range: ">=1,<2"
+    expected_output: Grounded answer and Claims
+    success_criteria: [Every factual Claim cites one or more web Evidence identities]
+    risk_hint: READ
+    execution_mode: CAPABILITY
+    parallelizable: false
+    max_attempts: 2
+  - step_key: review-answer
+    objective: Verify that the answer is supported by the collected web Evidence.
+    dependencies: [synthesize-answer]
+    capability_requirements:
+      - capability_id: runtime.review
+        version_range: ">=1,<2"
+    expected_output: Accepted grounded answer review
+    success_criteria: [No unsupported material Claim remains]
+    risk_hint: READ
+    execution_mode: REVIEW
+    parallelizable: false
+    max_attempts: 2

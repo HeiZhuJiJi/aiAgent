@@ -615,6 +615,7 @@ class ConversationRow(Base):
     title: Mapped[str] = mapped_column(String(500))
     version: Mapped[int] = mapped_column(default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
 
 
 class ConversationSummaryRow(Base):
@@ -660,6 +661,181 @@ class ConversationMessageRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class ConversationTurnRow(Base):
+    __tablename__ = "conversation_turns"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "user_message_id"),
+        UniqueConstraint("workspace_id", "task_id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "conversation_id"],
+            ["conversations.workspace_id", "conversations.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "user_message_id"],
+            ["messages.workspace_id", "messages.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"],
+            ["task_runs.workspace_id", "task_runs.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "id", "active_attempt_id"],
+            [
+                "conversation_turn_attempts.workspace_id",
+                "conversation_turn_attempts.turn_id",
+                "conversation_turn_attempts.id",
+            ],
+            name="fk_conversation_turns_active_attempt",
+            use_alter=True,
+        ),
+        CheckConstraint("schema_version = 1"),
+        CheckConstraint("version > 0"),
+        CheckConstraint("decision_version > 0"),
+        CheckConstraint("fencing_token >= 0"),
+        CheckConstraint("NOT context_eligible OR state = 'COMPLETED'"),
+        CheckConstraint(
+            "(state IN ('COMPLETED','FAILED','CANCELLED','SUPERSEDED')) "
+            "= (completed_at IS NOT NULL)"
+        ),
+        CheckConstraint(
+            "state IN ('PENDING','RUNNING','COMPLETED','FAILED','CANCELLED','SUPERSEDED')"
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    conversation_id: Mapped[UUID] = mapped_column(index=True)
+    user_message_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    state: Mapped[str] = mapped_column(String(30), default="PENDING", index=True)
+    task_id: Mapped[UUID | None] = mapped_column(index=True)
+    active_attempt_id: Mapped[UUID | None] = mapped_column(index=True)
+    decision_version: Mapped[int] = mapped_column(default=1)
+    fencing_token: Mapped[int] = mapped_column(default=0)
+    context_eligible: Mapped[bool] = mapped_column(default=False)
+    version: Mapped[int] = mapped_column(default=1)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ConversationTurnDecisionRow(Base):
+    __tablename__ = "conversation_turn_decisions"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "turn_id", "decision_version"),
+        ForeignKeyConstraint(
+            ["workspace_id", "turn_id"],
+            ["conversation_turns.workspace_id", "conversation_turns.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+        CheckConstraint("decision_version > 0"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    turn_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    decision_version: Mapped[int] = mapped_column(default=1)
+    model_binding_payload: Mapped[dict[str, object]] = mapped_column(JSONB(none_as_null=True))
+    decision_payload: Mapped[dict[str, object]] = mapped_column(JSONB(none_as_null=True))
+    content_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ConversationTurnAttemptRow(Base):
+    __tablename__ = "conversation_turn_attempts"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "turn_id", "id"),
+        UniqueConstraint("workspace_id", "turn_id", "fencing_token"),
+        ForeignKeyConstraint(
+            ["workspace_id", "turn_id"],
+            ["conversation_turns.workspace_id", "conversation_turns.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+        CheckConstraint("fencing_token > 0"),
+        CheckConstraint(
+            "state IN ('RUNNING','SUCCEEDED','FAILED','CANCELLED','SUPERSEDED')"
+        ),
+        CheckConstraint(
+            "(state = 'FAILED' AND failure_payload IS NOT NULL) "
+            "OR (state <> 'FAILED' AND failure_payload IS NULL)"
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    turn_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    state: Mapped[str] = mapped_column(String(30), default="RUNNING", index=True)
+    fencing_token: Mapped[int]
+    trace_id: Mapped[str] = mapped_column(String(200))
+    failure_payload: Mapped[dict[str, object] | None] = mapped_column(
+        JSONB(none_as_null=True)
+    )
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ConversationTurnOutcomeRow(Base):
+    __tablename__ = "conversation_turn_outcomes"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "turn_id"),
+        UniqueConstraint("workspace_id", "assistant_message_id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "turn_id"],
+            ["conversation_turns.workspace_id", "conversation_turns.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "turn_id", "attempt_id"],
+            [
+                "conversation_turn_attempts.workspace_id",
+                "conversation_turn_attempts.turn_id",
+                "conversation_turn_attempts.id",
+            ],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "assistant_message_id"],
+            ["messages.workspace_id", "messages.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+        CheckConstraint(
+            "status IN "
+            "('ANSWERED','PARTIALLY_ANSWERED','CLARIFICATION_REQUIRED','UNAVAILABLE','FAILED')"
+        ),
+        CheckConstraint(
+            "(status IN ('UNAVAILABLE','FAILED') AND failure_payload IS NOT NULL) "
+            "OR (status NOT IN ('UNAVAILABLE','FAILED') AND failure_payload IS NULL)"
+        ),
+        CheckConstraint(
+            "NOT context_eligible OR status NOT IN ('UNAVAILABLE','FAILED')"
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    turn_id: Mapped[UUID] = mapped_column(index=True)
+    attempt_id: Mapped[UUID] = mapped_column(index=True)
+    assistant_message_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    status: Mapped[str] = mapped_column(String(40), index=True)
+    failure_payload: Mapped[dict[str, object] | None] = mapped_column(
+        JSONB(none_as_null=True)
+    )
+    context_eligible: Mapped[bool] = mapped_column(default=False)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class ProjectMemoryRow(Base):
     __tablename__ = "project_memory"
     __table_args__ = (
@@ -698,6 +874,7 @@ class KnowledgeDocumentRow(Base):
     media_type: Mapped[str] = mapped_column(String(200))
     version: Mapped[int] = mapped_column(default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
 
 
 class KnowledgeDocumentVersionRow(Base):
@@ -755,6 +932,7 @@ class KnowledgeIngestionJobRow(Base):
     safe_error: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
 
 
 class KnowledgeChunkRow(Base):
@@ -1032,10 +1210,14 @@ class ModelConfigRow(Base):
     __tablename__ = "model_configs"
     __table_args__ = (
         UniqueConstraint("workspace_id", "id"),
-        UniqueConstraint("workspace_id", "kind", "model_name", "base_url"),
+        UniqueConstraint("workspace_id", "supersedes_config_id"),
         ForeignKeyConstraint(["workspace_id"], ["workspaces.id"]),
         ForeignKeyConstraint(
             ["workspace_id", "secret_id"], ["secrets.workspace_id", "secrets.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "supersedes_config_id"],
+            ["model_configs.workspace_id", "model_configs.id"],
         ),
         CheckConstraint("schema_version = 1"),
         CheckConstraint("version > 0"),
@@ -1051,6 +1233,7 @@ class ModelConfigRow(Base):
     model_name: Mapped[str] = mapped_column(String(300))
     external: Mapped[bool]
     secret_id: Mapped[UUID | None] = mapped_column(index=True)
+    supersedes_config_id: Mapped[UUID | None] = mapped_column(index=True)
     enabled: Mapped[bool] = mapped_column(default=True)
     version: Mapped[int] = mapped_column(default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -1168,3 +1351,206 @@ class ConsistencyIncidentRow(Base):
     incident_type: Mapped[str] = mapped_column(String(100), index=True)
     detail: Mapped[dict[str, object]] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class TaskContractVersionRow(Base):
+    __tablename__ = "task_contract_versions"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "task_id", "version"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "supersedes_id"],
+            ["task_contract_versions.workspace_id", "task_contract_versions.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+        CheckConstraint("version > 0"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    version: Mapped[int]
+    supersedes_id: Mapped[UUID | None] = mapped_column(index=True)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_by: Mapped[UUID]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    is_current: Mapped[bool] = mapped_column(default=True, index=True)
+
+
+class RequirementRow(Base):
+    __tablename__ = "requirements"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint("workspace_id", "contract_version_id", "requirement_key"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "contract_version_id"],
+            ["task_contract_versions.workspace_id", "task_contract_versions.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    contract_version_id: Mapped[UUID] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    requirement_key: Mapped[str] = mapped_column(String(200))
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RequirementSupportRow(Base):
+    __tablename__ = "requirement_supports"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        UniqueConstraint(
+            "workspace_id", "requirement_id", "plan_revision_id", "step_id", "relation_type"
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "requirement_id"],
+            ["requirements.workspace_id", "requirements.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "plan_revision_id"],
+            ["task_plans.workspace_id", "task_plans.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "step_id"], ["task_steps.workspace_id", "task_steps.id"]
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    requirement_id: Mapped[UUID] = mapped_column(index=True)
+    plan_revision_id: Mapped[UUID] = mapped_column(index=True)
+    step_id: Mapped[UUID] = mapped_column(index=True)
+    relation_type: Mapped[str] = mapped_column(String(40))
+    schema_version: Mapped[int] = mapped_column(default=1)
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class VerificationResultRow(Base):
+    __tablename__ = "verification_results"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "attempt_id"], ["step_attempts.workspace_id", "step_attempts.id"]
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    attempt_id: Mapped[UUID | None] = mapped_column(index=True)
+    fencing_token: Mapped[int | None]
+    schema_version: Mapped[int] = mapped_column(default=1)
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RequirementAssessmentRow(Base):
+    __tablename__ = "requirement_assessments"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "requirement_id"],
+            ["requirements.workspace_id", "requirements.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "verification_ref"],
+            ["verification_results.workspace_id", "verification_results.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "supersedes_id"],
+            ["requirement_assessments.workspace_id", "requirement_assessments.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    requirement_id: Mapped[UUID] = mapped_column(index=True)
+    verification_ref: Mapped[UUID | None] = mapped_column(index=True)
+    supersedes_id: Mapped[UUID | None] = mapped_column(index=True)
+    attempt_id: Mapped[UUID | None] = mapped_column(index=True)
+    fencing_token: Mapped[int | None]
+    schema_version: Mapped[int] = mapped_column(default=1)
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    assessed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class GapRow(Base):
+    __tablename__ = "gaps"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "requirement_id"],
+            ["requirements.workspace_id", "requirements.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "assessment_ref"],
+            ["requirement_assessments.workspace_id", "requirement_assessments.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    requirement_id: Mapped[UUID | None] = mapped_column(index=True)
+    assessment_ref: Mapped[UUID | None] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class DeliveryDecisionRow(Base):
+    __tablename__ = "delivery_decisions"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "id"),
+        ForeignKeyConstraint(
+            ["workspace_id", "task_id"], ["task_runs.workspace_id", "task_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "completion_snapshot_id"],
+            ["execution_snapshots.workspace_id", "execution_snapshots.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "verification_ref"],
+            ["verification_results.workspace_id", "verification_results.id"],
+        ),
+        ForeignKeyConstraint(
+            ["workspace_id", "supersedes_id"],
+            ["delivery_decisions.workspace_id", "delivery_decisions.id"],
+        ),
+        CheckConstraint("schema_version = 1"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(index=True)
+    task_id: Mapped[UUID] = mapped_column(index=True)
+    completion_snapshot_id: Mapped[UUID] = mapped_column(index=True)
+    verification_ref: Mapped[UUID | None] = mapped_column(index=True)
+    supersedes_id: Mapped[UUID | None] = mapped_column(index=True)
+    schema_version: Mapped[int] = mapped_column(default=1)
+    policy_version: Mapped[str] = mapped_column(String(100))
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)

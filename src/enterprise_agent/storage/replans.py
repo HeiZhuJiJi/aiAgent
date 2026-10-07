@@ -163,6 +163,7 @@ async def apply_replan(
     trace_id: str,
     decision: ReplanDecision,
     *,
+    expected_from_plan_id: UUID | None = None,
     actor_type: Literal["USER", "AGENT"] = "AGENT",
 ) -> AppliedReplan:
     """Atomically append a Plan version and supersede its prior executable DAG."""
@@ -181,20 +182,43 @@ async def apply_replan(
     if task is None or current_row is None:
         raise DomainError(FailureCode.CONSISTENCY_VIOLATION, "replan source is unavailable")
     payload, digest = _decision_payload(decision)
-    replay = await session.scalar(
-        select(ReplanDecisionRow).where(
-            ReplanDecisionRow.workspace_id == workspace_id,
-            ReplanDecisionRow.task_id == task_id,
-            ReplanDecisionRow.to_plan_id == current_row.id,
+    if expected_from_plan_id is not None:
+        existing = await session.scalar(
+            select(ReplanDecisionRow).where(
+                ReplanDecisionRow.workspace_id == workspace_id,
+                ReplanDecisionRow.task_id == task_id,
+                ReplanDecisionRow.from_plan_id == expected_from_plan_id,
+            )
         )
-    )
-    if replay is not None:
-        if replay.content_hash != digest:
+        if existing is not None:
+            if existing.content_hash != digest:
+                raise DomainError(
+                    FailureCode.CONSISTENCY_VIOLATION,
+                    "immutable replan decision differs from replay",
+                )
+            return _view(existing)
+        if current_row.id != expected_from_plan_id:
             raise DomainError(
                 FailureCode.CONSISTENCY_VIOLATION,
-                "latest plan was produced by a different replan decision",
+                "replan source is not the latest Plan",
             )
-        return _view(replay)
+    else:
+        # Backward-compatible replay detection for callers that predate explicit
+        # source-plan fencing. Production callers always provide the source Plan.
+        replay = await session.scalar(
+            select(ReplanDecisionRow).where(
+                ReplanDecisionRow.workspace_id == workspace_id,
+                ReplanDecisionRow.task_id == task_id,
+                ReplanDecisionRow.to_plan_id == current_row.id,
+            )
+        )
+        if replay is not None:
+            if replay.content_hash != digest:
+                raise DomainError(
+                    FailureCode.CONSISTENCY_VIOLATION,
+                    "latest plan was produced by a different replan decision",
+                )
+            return _view(replay)
     existing = await session.scalar(
         select(ReplanDecisionRow).where(
             ReplanDecisionRow.workspace_id == workspace_id,
@@ -311,11 +335,18 @@ async def apply_replan(
 
     old_by_key = {item.step_key: item for item in old_steps if item.step_key is not None}
     next_keys = {item.step_key for item in next_plan.steps}
+    current_specs = {item.step_key: item for item in current.steps}
+    next_specs = {item.step_key: item for item in next_plan.steps}
     initial_states: dict[str, StepState] = {}
     if decision.preserve_completed_steps:
         for key, item in old_by_key.items():
             state = StepState(item.state)
-            if key in next_keys and state in {StepState.COMPLETED, StepState.SKIPPED}:
+            if (
+                key in next_keys
+                and state in {StepState.COMPLETED, StepState.SKIPPED}
+                and current_specs.get(key) == next_specs[key]
+                and key not in decision.affected_steps
+            ):
                 initial_states[key] = state
     if decision.action == "SKIP_STEP":
         initial_states.update({key: StepState.SKIPPED for key in decision.affected_steps})

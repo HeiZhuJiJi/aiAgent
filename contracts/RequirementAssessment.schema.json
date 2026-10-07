@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "AssessmentStatus": {
+      "enum": [
+        "SUPPORTED",
+        "PARTIALLY_SUPPORTED",
+        "UNSUPPORTED",
+        "CONFLICTING",
+        "STALE",
+        "UNVERIFIABLE",
+        "UNKNOWN",
+        "BLOCKED"
+      ],
+      "title": "AssessmentStatus",
+      "type": "string"
+    },
+    "GapType": {
+      "enum": [
+        "MISSING",
+        "UNSUPPORTED",
+        "CONFLICT",
+        "STALE",
+        "AMBIGUOUS",
+        "INVALID",
+        "UNKNOWN",
+        "AUTHORIZATION"
+      ],
+      "title": "GapType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "requirement_id": {
+      "format": "uuid",
+      "title": "Requirement Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/AssessmentStatus"
+    },
+    "gap_type": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GapType"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "supporting_claim_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Supporting Claim Ids",
+      "type": "array"
+    },
+    "supporting_evidence_ids": {
+      "default": [],
+      "items": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "title": "Supporting Evidence Ids",
+      "type": "array"
+    },
+    "verification_ref": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Verification Ref"
+    },
+    "evaluator_version": {
+      "minLength": 1,
+      "title": "Evaluator Version",
+      "type": "string"
+    },
+    "policy_version": {
+      "minLength": 1,
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "input_snapshot_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Input Snapshot Hash",
+      "type": "string"
+    },
+    "assessed_at": {
+      "format": "date-time",
+      "title": "Assessed At",
+      "type": "string"
+    },
+    "supersedes_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes Id"
+    },
+    "attempt_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attempt Id"
+    },
+    "fencing_token": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fencing Token"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "requirement_id",
+    "status",
+    "evaluator_version",
+    "policy_version",
+    "input_snapshot_hash",
+    "assessed_at"
+  ],
+  "title": "RequirementAssessment",
+  "type": "object"
+}

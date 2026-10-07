@@ -34,8 +34,31 @@ LLM_CALL_TOTAL = Counter("llm_call_total", "LLM calls.", ("provider",), registry
 LLM_LATENCY = Histogram(
     "llm_latency_seconds", "LLM request latency.", ("provider",), registry=REGISTRY
 )
+LLM_FIRST_TOKEN_LATENCY = Histogram(
+    "llm_first_token_latency_seconds",
+    "Latency from a streaming model request to its first content token.",
+    ("provider",),
+    registry=REGISTRY,
+)
+LLM_STREAM_LATENCY = Histogram(
+    "llm_stream_latency_seconds",
+    "Total latency of a streaming model response.",
+    ("provider",),
+    registry=REGISTRY,
+)
 LLM_TOKENS = Counter(
     "llm_tokens_total", "LLM tokens consumed.", ("provider", "direction"), registry=REGISTRY
+)
+AGENT_PLANNER_LATENCY = Histogram(
+    "agent_planner_latency_seconds",
+    "Latency of semantic Agent planning when the deterministic fast path cannot decide.",
+    registry=REGISTRY,
+)
+CHAT_ROUTE_TOTAL = Counter(
+    "chat_route_total",
+    "Chat routing decisions by execution route and decision mechanism.",
+    ("route", "mechanism"),
+    registry=REGISTRY,
 )
 CAPABILITY_CALL_TOTAL = Counter(
     "capability_call_total", "Capability provider calls.", ("capability",), registry=REGISTRY

@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "ConversationTurnState": {
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "SUPERSEDED"
+      ],
+      "title": "ConversationTurnState",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "turn_id": {
+      "format": "uuid",
+      "title": "Turn Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "conversation_id": {
+      "format": "uuid",
+      "title": "Conversation Id",
+      "type": "string"
+    },
+    "user_message_id": {
+      "format": "uuid",
+      "title": "User Message Id",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/ConversationTurnState"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Task Id"
+    },
+    "active_attempt_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Attempt Id"
+    },
+    "decision_version": {
+      "exclusiveMinimum": 0,
+      "title": "Decision Version",
+      "type": "integer"
+    },
+    "fencing_token": {
+      "minimum": 0,
+      "title": "Fencing Token",
+      "type": "integer"
+    },
+    "context_eligible": {
+      "title": "Context Eligible",
+      "type": "boolean"
+    },
+    "version": {
+      "exclusiveMinimum": 0,
+      "title": "Version",
+      "type": "integer"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completed At"
+    }
+  },
+  "required": [
+    "turn_id",
+    "workspace_id",
+    "conversation_id",
+    "user_message_id",
+    "state",
+    "decision_version",
+    "fencing_token",
+    "context_eligible",
+    "version",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "ConversationTurn",
+  "type": "object"
+}

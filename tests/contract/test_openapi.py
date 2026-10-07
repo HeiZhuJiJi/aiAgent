@@ -12,6 +12,7 @@ def test_openapi_contains_identity_workspace_and_uniform_error_contracts():
         "/workspaces",
         "/workspaces/{workspace_id}",
         "/tasks",
+        "/research-turns",
         "/workspaces/{workspace_id}/tasks",
         "/workspaces/{workspace_id}/tasks/{task_id}",
         "/workspaces/{workspace_id}/tasks/{task_id}/pause",

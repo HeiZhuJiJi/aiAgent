@@ -26,6 +26,11 @@ from enterprise_agent.observability.metrics import (
     CAPABILITY_FAILURE_TOTAL,
     POLICY_DENIED_TOTAL,
 )
+from enterprise_agent.runtime.admission import (
+    AdmissionLease,
+    RedisAdmissionController,
+    record_schedule_decision,
+)
 from enterprise_agent.runtime.budgets import BudgetDelta, BudgetKind, reserve_budget
 from enterprise_agent.runtime.failure_injector import FailureInjector, FailurePoint
 from enterprise_agent.runtime.loop_guard import capability_fingerprint, check_capability_loop
@@ -89,12 +94,86 @@ class CapabilityExecutor:
         sessions: async_sessionmaker[AsyncSession],
         registry: CapabilityRegistry,
         failure_injector: FailureInjector | None = None,
+        *,
+        admission_controller: RedisAdmissionController | None = None,
+        admission_lease_ms: int = 360_000,
+        admission_poll_seconds: float = 0.25,
     ) -> None:
+        if admission_lease_ms < 100 or admission_poll_seconds <= 0:
+            raise ValueError("capability admission timing must be positive")
         self._sessions = sessions
         self._registry = registry
         self._failure_injector = failure_injector or FailureInjector()
+        self._admission_controller = admission_controller
+        self._admission_lease_ms = admission_lease_ms
+        self._admission_poll_seconds = admission_poll_seconds
 
     async def execute(
+        self,
+        request: CapabilityRequest,
+        policy_input: PolicyInput,
+        *,
+        approval_id: UUID | None = None,
+    ) -> CapabilityResult:
+        entry = self._registry.resolve(request.capability_id, request.capability_version)
+        descriptor = entry.descriptor
+        self._validate_identity(request, descriptor, policy_input)
+        _validate_schema(descriptor.input_schema, request.arguments, "input")
+        policy = evaluate(policy_input)
+        needs_dispatch = policy.decision != Decision.DENY and not (
+            policy.decision == Decision.REQUIRE_APPROVAL and approval_id is None
+        )
+        lease: AdmissionLease | None = None
+        if self._admission_controller is not None and needs_dispatch:
+            lease = await self._wait_for_admission(request, descriptor)
+        try:
+            return await self._execute_admitted(
+                request,
+                policy_input,
+                approval_id=approval_id,
+            )
+        finally:
+            if lease is not None:
+                assert self._admission_controller is not None
+                await self._admission_controller.release(lease)
+
+    async def _wait_for_admission(
+        self,
+        request: CapabilityRequest,
+        descriptor: CapabilityDescriptor,
+    ) -> AdmissionLease:
+        assert self._admission_controller is not None
+        retry_window_ms = int(
+            (
+                descriptor.timeout_sec * descriptor.retry_policy.max_attempts
+                + descriptor.retry_policy.max_delay_sec
+                * (descriptor.retry_policy.max_attempts - 1)
+                + 5
+            )
+            * 1000
+        )
+        lease_ms = max(self._admission_lease_ms, retry_window_ms)
+        while True:
+            decision, lease = await self._admission_controller.try_acquire_call(
+                request.workspace_id,
+                descriptor.provider,
+                descriptor.id,
+                is_model=descriptor.kind == "MODEL",
+                is_mcp=descriptor.kind == "MCP",
+                lease_ms=lease_ms,
+            )
+            async with self._sessions.begin() as session:
+                await record_schedule_decision(
+                    session,
+                    request.workspace_id,
+                    request.task_id,
+                    decision,
+                )
+            if lease is not None:
+                return lease
+            await asyncio.sleep(self._admission_poll_seconds)
+
+    async def _execute_admitted(
         self,
         request: CapabilityRequest,
         policy_input: PolicyInput,

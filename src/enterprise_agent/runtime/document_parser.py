@@ -36,7 +36,12 @@ class ParsedPart:
 
 
 def _normalize(value: str) -> str:
-    value = unicodedata.normalize("NFKC", value).replace("\r\n", "\n").replace("\r", "\n")
+    value = (
+        unicodedata.normalize("NFKC", value)
+        .replace("\x00", "")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+    )
     return re.sub(r"[ \t]+", " ", value).strip()
 
 

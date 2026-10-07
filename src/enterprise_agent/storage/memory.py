@@ -16,10 +16,13 @@ from enterprise_agent.contracts.domain import (
     ProjectMemoryType,
 )
 from enterprise_agent.domain.states import DomainError
+from enterprise_agent.identity.contracts import Identity
 from enterprise_agent.storage.tables import (
+    AuditRow,
     ConversationMessageRow,
     ConversationRow,
     ConversationSummaryRow,
+    ConversationTurnRow,
     ProjectMemoryRow,
     Workspace,
 )
@@ -75,7 +78,7 @@ async def create_conversation(
             ConversationRow.id == conversation_id,
         )
     )
-    if row is None or row.title != normalized:
+    if row is None or row.deleted_at is not None or row.title != normalized:
         raise DomainError(FailureCode.CONSISTENCY_VIOLATION, "conversation replay mismatch")
     return Conversation(
         conversation_id=row.id,
@@ -92,7 +95,10 @@ async def list_conversations(
     rows = (
         await session.scalars(
             select(ConversationRow)
-            .where(ConversationRow.workspace_id == workspace_id)
+            .where(
+                ConversationRow.workspace_id == workspace_id,
+                ConversationRow.deleted_at.is_(None),
+            )
             .order_by(ConversationRow.created_at, ConversationRow.id)
         )
     ).all()
@@ -141,6 +147,7 @@ async def append_conversation_message(
         select(ConversationRow.id).where(
             ConversationRow.workspace_id == workspace_id,
             ConversationRow.id == conversation_id,
+            ConversationRow.deleted_at.is_(None),
         )
     )
     if conversation is None:
@@ -189,6 +196,7 @@ async def load_conversation_messages(
         select(ConversationRow.id).where(
             ConversationRow.workspace_id == workspace_id,
             ConversationRow.id == conversation_id,
+            ConversationRow.deleted_at.is_(None),
         )
     )
     if conversation is None:
@@ -224,6 +232,7 @@ async def append_conversation_summary(
         .where(
             ConversationRow.workspace_id == value.workspace_id,
             ConversationRow.id == value.conversation_id,
+            ConversationRow.deleted_at.is_(None),
         )
         .with_for_update()
     )
@@ -261,6 +270,60 @@ async def append_conversation_summary(
         )
     )
     return value
+
+
+async def delete_conversation(
+    session: AsyncSession,
+    *,
+    identity: Identity,
+    workspace_id: UUID,
+    conversation_id: UUID,
+    expected_version: int,
+    trace_id: str,
+) -> None:
+    row = await session.scalar(
+        select(ConversationRow)
+        .where(
+            ConversationRow.workspace_id == workspace_id,
+            ConversationRow.id == conversation_id,
+            ConversationRow.deleted_at.is_(None),
+        )
+        .with_for_update()
+    )
+    if row is None:
+        raise DomainError(FailureCode.POLICY_DENIED, "conversation unavailable")
+    if row.version != expected_version:
+        raise DomainError(FailureCode.STALE_ATTEMPT, "conversation version changed")
+    active_turn = await session.scalar(
+        select(ConversationTurnRow.id).where(
+            ConversationTurnRow.workspace_id == workspace_id,
+            ConversationTurnRow.conversation_id == conversation_id,
+            ConversationTurnRow.state.in_(("PENDING", "RUNNING")),
+        ).limit(1)
+    )
+    if active_turn is not None:
+        raise DomainError(
+            FailureCode.VALIDATION_FAILED,
+            "conversation has an active turn and cannot be deleted",
+        )
+    now = await session.scalar(select(func.clock_timestamp()))
+    if now is None:
+        raise DomainError(FailureCode.DB_UNAVAILABLE, "database clock unavailable")
+    row.deleted_at = now
+    row.version += 1
+    session.add(
+        AuditRow(
+            workspace_id=workspace_id,
+            actor_type="USER",
+            actor_id=identity.user_id,
+            action="conversation.deleted",
+            resource_type="CONVERSATION",
+            resource_id=conversation_id,
+            result={"retained_immutable_history": True},
+            trace_id=trace_id,
+        )
+    )
+    await session.flush()
 
 
 async def load_conversation_summaries(

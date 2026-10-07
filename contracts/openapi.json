@@ -1,6 +1,281 @@
 {
   "components": {
     "schemas": {
+      "AgentExecutionLevel": {
+        "enum": [
+          "INLINE_CHAT",
+          "BOUNDED_QA",
+          "DURABLE_TASK"
+        ],
+        "title": "AgentExecutionLevel",
+        "type": "string"
+      },
+      "AgentInformationSource": {
+        "enum": [
+          "MODEL",
+          "WEB",
+          "RAG",
+          "STRUCTURED_DATA"
+        ],
+        "title": "AgentInformationSource",
+        "type": "string"
+      },
+      "AgentPlannerAction": {
+        "enum": [
+          "RESPOND",
+          "CLARIFY",
+          "EXECUTE"
+        ],
+        "title": "AgentPlannerAction",
+        "type": "string"
+      },
+      "AgentSourcePlan": {
+        "additionalProperties": false,
+        "properties": {
+          "fallback_sources": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AgentInformationSource"
+            },
+            "maxItems": 4,
+            "title": "Fallback Sources",
+            "type": "array"
+          },
+          "forbidden_sources": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AgentInformationSource"
+            },
+            "maxItems": 4,
+            "title": "Forbidden Sources",
+            "type": "array"
+          },
+          "preferred_sources": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AgentInformationSource"
+            },
+            "maxItems": 4,
+            "title": "Preferred Sources",
+            "type": "array"
+          },
+          "required_sources": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AgentInformationSource"
+            },
+            "maxItems": 4,
+            "title": "Required Sources",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "title": "AgentSourcePlan",
+        "type": "object"
+      },
+      "AgentSpeechAct": {
+        "enum": [
+          "QUESTION",
+          "FOLLOW_UP",
+          "CORRECTION",
+          "CLARIFICATION",
+          "COMMAND",
+          "SOCIAL"
+        ],
+        "title": "AgentSpeechAct",
+        "type": "string"
+      },
+      "AgentTurnDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AgentPlannerAction"
+          },
+          "answer_contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerContract"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "direct_response": {
+            "anyOf": [
+              {
+                "maxLength": 32000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direct Response"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionDecision"
+          },
+          "intent": {
+            "$ref": "#/components/schemas/IntentFrame"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "tool_plan": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/PlannedToolCall"
+            },
+            "maxItems": 8,
+            "title": "Tool Plan",
+            "type": "array"
+          }
+        },
+        "required": [
+          "action",
+          "intent",
+          "execution"
+        ],
+        "title": "AgentTurnDecision",
+        "type": "object"
+      },
+      "AnswerContract": {
+        "additionalProperties": false,
+        "description": "The user-visible answer shape and minimum evidence needed to satisfy it.",
+        "properties": {
+          "answer_type": {
+            "enum": [
+              "FACT",
+              "SUMMARY",
+              "LIST",
+              "TIMELINE",
+              "COMPARISON",
+              "EXPLANATION",
+              "FORECAST",
+              "DOCUMENT_SUMMARY",
+              "DOCUMENT_QA"
+            ],
+            "title": "Answer Type",
+            "type": "string"
+          },
+          "completeness": {
+            "enum": [
+              "COMPLETE",
+              "BEST_EFFORT"
+            ],
+            "title": "Completeness",
+            "type": "string"
+          },
+          "freshness": {
+            "enum": [
+              "STABLE",
+              "CURRENT",
+              "HISTORICAL",
+              "SOURCE_BOUND"
+            ],
+            "title": "Freshness",
+            "type": "string"
+          },
+          "maximum_answer_items": {
+            "anyOf": [
+              {
+                "maximum": 8.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Answer Items"
+          },
+          "minimum_answer_items": {
+            "anyOf": [
+              {
+                "maximum": 8.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum Answer Items"
+          },
+          "minimum_evidence_items": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Minimum Evidence Items",
+            "type": "integer"
+          },
+          "minimum_independent_sources": {
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Minimum Independent Sources",
+            "type": "integer"
+          },
+          "organization": {
+            "enum": [
+              "CONCISE",
+              "BULLETS",
+              "TIMELINE",
+              "COMPARISON",
+              "STRUCTURED_SUMMARY"
+            ],
+            "title": "Organization",
+            "type": "string"
+          },
+          "partial_answer_policy": {
+            "enum": [
+              "ALLOW_SUPPORTED_ONLY",
+              "REQUIRE_COMPLETE"
+            ],
+            "title": "Partial Answer Policy",
+            "type": "string"
+          },
+          "require_explicit_dates": {
+            "title": "Require Explicit Dates",
+            "type": "boolean"
+          },
+          "required_aspects": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Required Aspects",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "answer_type",
+          "required_aspects",
+          "completeness",
+          "freshness",
+          "require_explicit_dates",
+          "minimum_evidence_items",
+          "minimum_independent_sources",
+          "partial_answer_policy",
+          "organization"
+        ],
+        "title": "AnswerContract",
+        "type": "object"
+      },
       "ApprovalDecisionInput": {
         "additionalProperties": false,
         "properties": {
@@ -281,6 +556,20 @@
         "title": "ArtifactManifest",
         "type": "object"
       },
+      "AssessmentStatus": {
+        "enum": [
+          "SUPPORTED",
+          "PARTIALLY_SUPPORTED",
+          "UNSUPPORTED",
+          "CONFLICTING",
+          "STALE",
+          "UNVERIFIABLE",
+          "UNKNOWN",
+          "BLOCKED"
+        ],
+        "title": "AssessmentStatus",
+        "type": "string"
+      },
       "AttemptState": {
         "enum": [
           "CREATED",
@@ -440,6 +729,75 @@
           "created_at"
         ],
         "title": "AuditView",
+        "type": "object"
+      },
+      "BoundedResearchPlan": {
+        "additionalProperties": false,
+        "description": "A non-executable, bounded plan for retrieval and grounded answer composition.",
+        "properties": {
+          "answer_contract": {
+            "$ref": "#/components/schemas/AnswerContract"
+          },
+          "entity_aliases": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maxProperties": 6,
+            "title": "Entity Aliases",
+            "type": "object"
+          },
+          "entity_scope": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Entity Scope",
+            "type": "array"
+          },
+          "result_limit": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Result Limit",
+            "type": "integer"
+          },
+          "retrieval_queries": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3,
+            "title": "Retrieval Queries",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "source_plan": {
+            "$ref": "#/components/schemas/SourcePlan"
+          },
+          "web_queries": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Web Queries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source_plan",
+          "result_limit",
+          "answer_contract"
+        ],
+        "title": "BoundedResearchPlan",
         "type": "object"
       },
       "CapabilityDescriptor": {
@@ -652,14 +1010,9 @@
         "title": "CapabilityRequirement",
         "type": "object"
       },
-      "ChatStreamInput": {
+      "ChatRouteInput": {
         "additionalProperties": false,
         "properties": {
-          "assistant_message_id": {
-            "format": "uuid",
-            "title": "Assistant Message Id",
-            "type": "string"
-          },
           "content": {
             "maxLength": 1000000,
             "minLength": 1,
@@ -670,6 +1023,215 @@
             "format": "uuid",
             "title": "Conversation Id",
             "type": "string"
+          },
+          "document_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Version Id"
+          },
+          "model_config_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Config Id"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "user_message_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Message Id"
+          },
+          "web_mode": {
+            "default": "AUTO",
+            "enum": [
+              "AUTO",
+              "FORCE",
+              "OFF"
+            ],
+            "title": "Web Mode",
+            "type": "string"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id",
+          "conversation_id",
+          "content"
+        ],
+        "title": "ChatRouteInput",
+        "type": "object"
+      },
+      "ChatRouteView": {
+        "additionalProperties": false,
+        "properties": {
+          "agent_decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentTurnDecision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "context_required": {
+            "title": "Context Required",
+            "type": "boolean"
+          },
+          "context_resolved": {
+            "title": "Context Resolved",
+            "type": "boolean"
+          },
+          "reason": {
+            "enum": [
+              "EXPLICIT_WEB",
+              "CURRENT_INFORMATION",
+              "SELECTED_DOCUMENT",
+              "WORKSPACE_KNOWLEDGE",
+              "MIXED_EVIDENCE",
+              "DIRECT_REQUEST",
+              "MISSING_CONTEXT",
+              "MODEL_ROUTER",
+              "MODEL_CLARIFICATION",
+              "AGENT_PLANNER",
+              "WEB_DISABLED"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "research_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BoundedResearchPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolved_content": {
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Resolved Content",
+            "type": "string"
+          },
+          "route": {
+            "enum": [
+              "DIRECT",
+              "WEB",
+              "RAG",
+              "MIXED",
+              "DURABLE"
+            ],
+            "title": "Route",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "search_limit": {
+            "default": 0,
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Search Limit",
+            "type": "integer"
+          },
+          "search_queries": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Search Queries",
+            "type": "array"
+          },
+          "search_query": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Query"
+          }
+        },
+        "required": [
+          "route",
+          "resolved_content",
+          "reason",
+          "confidence",
+          "context_required",
+          "context_resolved"
+        ],
+        "title": "ChatRouteView",
+        "type": "object"
+      },
+      "ChatStreamInput": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "fallback_model_config_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Model Config Id"
           },
           "model_config_id": {
             "format": "uuid",
@@ -698,11 +1260,19 @@
           "conversation_id",
           "model_config_id",
           "user_message_id",
-          "assistant_message_id",
           "content"
         ],
         "title": "ChatStreamInput",
         "type": "object"
+      },
+      "CompletionStatus": {
+        "enum": [
+          "COMPLETE",
+          "PARTIAL",
+          "UNAVAILABLE"
+        ],
+        "title": "CompletionStatus",
+        "type": "string"
       },
       "ConsistencyIncidentView": {
         "additionalProperties": false,
@@ -820,6 +1390,48 @@
         "title": "Conversation",
         "type": "object"
       },
+      "ConversationAttachment": {
+        "additionalProperties": false,
+        "description": "Presentation-safe reference to the document bound to one user Turn.",
+        "properties": {
+          "document_version_id": {
+            "format": "uuid",
+            "title": "Document Version Id",
+            "type": "string"
+          },
+          "ingestion_id": {
+            "format": "uuid",
+            "title": "Ingestion Id",
+            "type": "string"
+          },
+          "media_type": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Media Type",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ingestion_id",
+          "document_version_id",
+          "name",
+          "media_type"
+        ],
+        "title": "ConversationAttachment",
+        "type": "object"
+      },
       "ConversationCreate": {
         "additionalProperties": false,
         "properties": {
@@ -852,6 +1464,33 @@
           "title"
         ],
         "title": "ConversationCreate",
+        "type": "object"
+      },
+      "ConversationDeleteInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "workspace_id"
+        ],
+        "title": "ConversationDeleteInput",
         "type": "object"
       },
       "ConversationMessage": {
@@ -944,6 +1583,258 @@
         "title": "ConversationMessageCreate",
         "type": "object"
       },
+      "ConversationTimelineMessage": {
+        "additionalProperties": false,
+        "description": "A presentation-only message projection bound to its authoritative Turn.",
+        "properties": {
+          "attachment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConversationAttachment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "message_id": {
+            "format": "uuid",
+            "title": "Message Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "SYSTEM",
+              "USER",
+              "ASSISTANT"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "turn_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turn Id"
+          },
+          "turn_outcome_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConversationTurnOutcomeStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turn_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConversationTurnState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message_id",
+          "workspace_id",
+          "conversation_id",
+          "role",
+          "content",
+          "created_at"
+        ],
+        "title": "ConversationTimelineMessage",
+        "type": "object"
+      },
+      "ConversationTurnOutcomeStatus": {
+        "enum": [
+          "ANSWERED",
+          "PARTIALLY_ANSWERED",
+          "CLARIFICATION_REQUIRED",
+          "UNAVAILABLE",
+          "FAILED"
+        ],
+        "title": "ConversationTurnOutcomeStatus",
+        "type": "string"
+      },
+      "ConversationTurnState": {
+        "enum": [
+          "PENDING",
+          "RUNNING",
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED",
+          "SUPERSEDED"
+        ],
+        "title": "ConversationTurnState",
+        "type": "string"
+      },
+      "DeliveryDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "completion_snapshot_id": {
+            "format": "uuid",
+            "title": "Completion Snapshot Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/DeliveryDecisionType"
+          },
+          "disclosure": {
+            "default": "",
+            "title": "Disclosure",
+            "type": "string"
+          },
+          "excluded_claim_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Excluded Claim Ids",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "included_claim_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Included Claim Ids",
+            "type": "array"
+          },
+          "policy_version": {
+            "minLength": 1,
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "reason_codes": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "supersedes_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Id"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "unresolved_requirement_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Unresolved Requirement Ids",
+            "type": "array"
+          },
+          "verification_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Ref"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspace_id",
+          "task_id",
+          "completion_snapshot_id",
+          "decision",
+          "policy_version",
+          "created_at"
+        ],
+        "title": "DeliveryDecision",
+        "type": "object"
+      },
+      "DeliveryDecisionType": {
+        "enum": [
+          "FULL_ANSWER",
+          "PARTIAL_ANSWER",
+          "CLARIFICATION_REQUIRED",
+          "UNAVAILABLE",
+          "BLOCKED"
+        ],
+        "title": "DeliveryDecisionType",
+        "type": "string"
+      },
       "ErrorDetail": {
         "properties": {
           "code": {
@@ -1021,6 +1912,19 @@
             ],
             "title": "Claim Grounding Rate"
           },
+          "claim_provenance_correctness": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Provenance Correctness"
+          },
           "duplicate_side_effect_rate": {
             "anyOf": [
               {
@@ -1071,6 +1975,18 @@
             ],
             "title": "Hitl Accuracy"
           },
+          "max_latency_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Latency Ms"
+          },
           "mean_latency_ms": {
             "anyOf": [
               {
@@ -1082,6 +1998,30 @@
               }
             ],
             "title": "Mean Latency Ms"
+          },
+          "p50_latency_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P50 Latency Ms"
+          },
+          "p95_latency_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P95 Latency Ms"
           },
           "plan_valid_rate": {
             "anyOf": [
@@ -1135,6 +2075,19 @@
             ],
             "title": "Replan Success Rate"
           },
+          "retry_rate": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Rate"
+          },
           "schema_version": {
             "const": 1,
             "default": 1,
@@ -1154,6 +2107,19 @@
             ],
             "title": "Task Success Rate"
           },
+          "tool_success_rate": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Success Rate"
+          },
           "total_cases": {
             "exclusiveMinimum": 0.0,
             "title": "Total Cases",
@@ -1171,6 +2137,150 @@
             ],
             "title": "Total Cost"
           },
+          "total_failure_recoveries": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Failure Recoveries"
+          },
+          "total_hitl": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Hitl"
+          },
+          "total_hitl_approved": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Hitl Approved"
+          },
+          "total_hitl_expired": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Hitl Expired"
+          },
+          "total_hitl_rejected": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Hitl Rejected"
+          },
+          "total_replans": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Replans"
+          },
+          "total_replans_aborted": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Replans Aborted"
+          },
+          "total_replans_applied": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Replans Applied"
+          },
+          "total_retried_steps": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Retried Steps"
+          },
+          "total_retries": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Retries"
+          },
+          "total_step_attempts": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Step Attempts"
+          },
+          "total_steps_attempted": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Steps Attempted"
+          },
           "total_tokens": {
             "anyOf": [
               {
@@ -1182,6 +2292,54 @@
               }
             ],
             "title": "Total Tokens"
+          },
+          "total_tool_calls": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tool Calls"
+          },
+          "total_tool_denied": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tool Denied"
+          },
+          "total_tool_executions": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tool Executions"
+          },
+          "total_tool_succeeded": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tool Succeeded"
           }
         },
         "required": [
@@ -1307,6 +2465,18 @@
             ],
             "title": "Evidence Required"
           },
+          "failure_recovery_count": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Recovery Count"
+          },
           "hitl_correct": {
             "anyOf": [
               {
@@ -1317,6 +2487,18 @@
               }
             ],
             "title": "Hitl Correct"
+          },
+          "hitl_count": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hitl Count"
           },
           "latency_ms": {
             "anyOf": [
@@ -1363,6 +2545,18 @@
               }
             ],
             "title": "Recovery Success"
+          },
+          "replan_count": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replan Count"
           },
           "replan_success": {
             "anyOf": [
@@ -1438,6 +2632,18 @@
               }
             ],
             "title": "Tokens"
+          },
+          "tool_call_count": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Call Count"
           }
         },
         "required": [
@@ -1665,6 +2871,47 @@
         "title": "Evidence",
         "type": "object"
       },
+      "ExecutionDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "execution_level": {
+            "$ref": "#/components/schemas/AgentExecutionLevel"
+          },
+          "maximum_tool_steps": {
+            "maximum": 8.0,
+            "minimum": 0.0,
+            "title": "Maximum Tool Steps",
+            "type": "integer"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/Risk"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "source_plan": {
+            "$ref": "#/components/schemas/AgentSourcePlan"
+          }
+        },
+        "required": [
+          "execution_level",
+          "source_plan",
+          "risk",
+          "maximum_tool_steps",
+          "confidence"
+        ],
+        "title": "ExecutionDecision",
+        "type": "object"
+      },
       "Failure": {
         "additionalProperties": false,
         "properties": {
@@ -1717,6 +2964,20 @@
           "CONSISTENCY_VIOLATION"
         ],
         "title": "FailureCode",
+        "type": "string"
+      },
+      "GapType": {
+        "enum": [
+          "MISSING",
+          "UNSUPPORTED",
+          "CONFLICT",
+          "STALE",
+          "AMBIGUOUS",
+          "INVALID",
+          "UNKNOWN",
+          "AUTHORIZATION"
+        ],
+        "title": "GapType",
         "type": "string"
       },
       "GoldenExpectation": {
@@ -1896,7 +3157,169 @@
         "title": "Identity",
         "type": "object"
       },
+      "IntentFrame": {
+        "additionalProperties": false,
+        "properties": {
+          "entities": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Entities",
+            "type": "array"
+          },
+          "missing_information": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "normalized_question": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Normalized Question",
+            "type": "string"
+          },
+          "references": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "References",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "speech_act": {
+            "$ref": "#/components/schemas/AgentSpeechAct"
+          },
+          "temporal": {
+            "$ref": "#/components/schemas/TemporalFrame"
+          }
+        },
+        "required": [
+          "speech_act",
+          "normalized_question",
+          "temporal"
+        ],
+        "title": "IntentFrame",
+        "type": "object"
+      },
       "JsonValue": {},
+      "KnowledgeDocumentDeleteInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "workspace_id"
+        ],
+        "title": "KnowledgeDocumentDeleteInput",
+        "type": "object"
+      },
+      "KnowledgeDocumentPreviewView": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "document_version_id": {
+            "format": "uuid",
+            "title": "Document Version Id",
+            "type": "string"
+          },
+          "ingestion_id": {
+            "format": "uuid",
+            "title": "Ingestion Id",
+            "type": "string"
+          },
+          "media_type": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Media Type",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ingestion_id",
+          "document_version_id",
+          "name",
+          "media_type",
+          "content",
+          "truncated"
+        ],
+        "title": "KnowledgeDocumentPreviewView",
+        "type": "object"
+      },
+      "KnowledgeIngestionRetryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "workspace_id"
+        ],
+        "title": "KnowledgeIngestionRetryInput",
+        "type": "object"
+      },
       "KnowledgeIngestionView": {
         "additionalProperties": false,
         "properties": {
@@ -1921,6 +3344,17 @@
             "format": "uuid",
             "title": "Document Id",
             "type": "string"
+          },
+          "document_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Version"
           },
           "document_version_id": {
             "anyOf": [
@@ -2003,6 +3437,7 @@
           "state",
           "version",
           "document_version_id",
+          "document_version",
           "safe_error",
           "created_at",
           "completed_at"
@@ -2280,6 +3715,117 @@
         "title": "ModelConfigCreate",
         "type": "object"
       },
+      "ModelConfigStateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "workspace_id",
+          "enabled"
+        ],
+        "title": "ModelConfigStateInput",
+        "type": "object"
+      },
+      "ModelConfigUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "format": "password",
+                "type": "string",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "base_url": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Base Url",
+            "type": "string"
+          },
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "external": {
+            "title": "External",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "CHAT",
+              "EMBEDDING",
+              "RERANKER"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "model_name": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Model Name",
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "Qwen",
+              "DeepSeek",
+              "OpenAICompatible"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "workspace_id",
+          "kind",
+          "provider",
+          "base_url",
+          "model_name",
+          "external"
+        ],
+        "title": "ModelConfigUpdate",
+        "type": "object"
+      },
       "ModelConfigView": {
         "additionalProperties": false,
         "properties": {
@@ -2336,6 +3882,11 @@
             "default": 1,
             "title": "Schema Version",
             "type": "integer"
+          },
+          "superseded": {
+            "default": false,
+            "title": "Superseded",
+            "type": "boolean"
           },
           "version": {
             "title": "Version",
@@ -2568,6 +4119,46 @@
         "title": "PlanStepSpec",
         "type": "object"
       },
+      "PlannedToolCall": {
+        "additionalProperties": false,
+        "properties": {
+          "arguments": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "title": "Arguments",
+            "type": "object"
+          },
+          "purpose": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Purpose",
+            "type": "string"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/Risk",
+            "default": "READ"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "tool_name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Tool Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool_name",
+          "purpose"
+        ],
+        "title": "PlannedToolCall",
+        "type": "object"
+      },
       "RegisterInput": {
         "additionalProperties": false,
         "properties": {
@@ -2668,6 +4259,511 @@
           "budget_impact"
         ],
         "title": "ReplanDecision",
+        "type": "object"
+      },
+      "Requirement": {
+        "additionalProperties": false,
+        "properties": {
+          "completion_rule": {
+            "minLength": 1,
+            "title": "Completion Rule",
+            "type": "string"
+          },
+          "contract_version_id": {
+            "format": "uuid",
+            "title": "Contract Version Id",
+            "type": "string"
+          },
+          "delivery_policy": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "default": {},
+            "title": "Delivery Policy",
+            "type": "object"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "entity_scope": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Entity Scope",
+            "type": "array"
+          },
+          "evidence_policy": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "default": {},
+            "title": "Evidence Policy",
+            "type": "object"
+          },
+          "freshness_policy": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "default": {},
+            "title": "Freshness Policy",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "key": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Key",
+            "type": "string"
+          },
+          "mandatory": {
+            "title": "Mandatory",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "temporal_scope": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Temporal Scope",
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RequirementType"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspace_id",
+          "task_id",
+          "contract_version_id",
+          "key",
+          "type",
+          "mandatory",
+          "description",
+          "completion_rule"
+        ],
+        "title": "Requirement",
+        "type": "object"
+      },
+      "RequirementAssessment": {
+        "additionalProperties": false,
+        "properties": {
+          "assessed_at": {
+            "format": "date-time",
+            "title": "Assessed At",
+            "type": "string"
+          },
+          "attempt_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Id"
+          },
+          "evaluator_version": {
+            "minLength": 1,
+            "title": "Evaluator Version",
+            "type": "string"
+          },
+          "fencing_token": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fencing Token"
+          },
+          "gap_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GapType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "input_snapshot_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Input Snapshot Hash",
+            "type": "string"
+          },
+          "policy_version": {
+            "minLength": 1,
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "requirement_id": {
+            "format": "uuid",
+            "title": "Requirement Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssessmentStatus"
+          },
+          "supersedes_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Id"
+          },
+          "supporting_claim_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Supporting Claim Ids",
+            "type": "array"
+          },
+          "supporting_evidence_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Supporting Evidence Ids",
+            "type": "array"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "verification_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Ref"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspace_id",
+          "task_id",
+          "requirement_id",
+          "status",
+          "evaluator_version",
+          "policy_version",
+          "input_snapshot_hash",
+          "assessed_at"
+        ],
+        "title": "RequirementAssessment",
+        "type": "object"
+      },
+      "RequirementAssessmentView": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequirementAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirement": {
+            "$ref": "#/components/schemas/Requirement"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "requirement",
+          "assessment"
+        ],
+        "title": "RequirementAssessmentView",
+        "type": "object"
+      },
+      "RequirementType": {
+        "enum": [
+          "READ",
+          "ANALYSIS",
+          "WRITE",
+          "VERIFICATION"
+        ],
+        "title": "RequirementType",
+        "type": "string"
+      },
+      "ResearchTurnCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "maxLength": 1000000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "goal": {
+            "$ref": "#/components/schemas/TaskGoal"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "user_message_id": {
+            "format": "uuid",
+            "title": "User Message Id",
+            "type": "string"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id",
+          "conversation_id",
+          "user_message_id",
+          "content",
+          "goal"
+        ],
+        "title": "ResearchTurnCreateInput",
+        "type": "object"
+      },
+      "ResearchTurnView": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "task": {
+            "$ref": "#/components/schemas/TaskView"
+          },
+          "user_message": {
+            "$ref": "#/components/schemas/ConversationMessage"
+          }
+        },
+        "required": [
+          "user_message",
+          "task"
+        ],
+        "title": "ResearchTurnView",
+        "type": "object"
+      },
+      "RetentionPolicyUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_retention_days": {
+            "maximum": 36500.0,
+            "minimum": 1.0,
+            "title": "Artifact Retention Days",
+            "type": "integer"
+          },
+          "audit_retention_days": {
+            "anyOf": [
+              {
+                "maximum": 36500.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Retention Days"
+          },
+          "conversation_retention_days": {
+            "maximum": 36500.0,
+            "minimum": 1.0,
+            "title": "Conversation Retention Days",
+            "type": "integer"
+          },
+          "document_retention_days": {
+            "maximum": 36500.0,
+            "minimum": 1.0,
+            "title": "Document Retention Days",
+            "type": "integer"
+          },
+          "evaluation_retention_days": {
+            "maximum": 36500.0,
+            "minimum": 1.0,
+            "title": "Evaluation Retention Days",
+            "type": "integer"
+          },
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "retain_audit_tombstone": {
+            "default": true,
+            "title": "Retain Audit Tombstone",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "trace_retention_days": {
+            "maximum": 36500.0,
+            "minimum": 1.0,
+            "title": "Trace Retention Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version",
+          "conversation_retention_days",
+          "trace_retention_days",
+          "artifact_retention_days",
+          "document_retention_days",
+          "evaluation_retention_days"
+        ],
+        "title": "RetentionPolicyUpdate",
+        "type": "object"
+      },
+      "RetentionPolicyView": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_retention_days": {
+            "title": "Artifact Retention Days",
+            "type": "integer"
+          },
+          "audit_retention_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Retention Days"
+          },
+          "conversation_retention_days": {
+            "title": "Conversation Retention Days",
+            "type": "integer"
+          },
+          "document_retention_days": {
+            "title": "Document Retention Days",
+            "type": "integer"
+          },
+          "evaluation_retention_days": {
+            "title": "Evaluation Retention Days",
+            "type": "integer"
+          },
+          "retain_audit_tombstone": {
+            "title": "Retain Audit Tombstone",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "trace_retention_days": {
+            "title": "Trace Retention Days",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id",
+          "version",
+          "conversation_retention_days",
+          "trace_retention_days",
+          "artifact_retention_days",
+          "document_retention_days",
+          "evaluation_retention_days",
+          "audit_retention_days",
+          "retain_audit_tombstone",
+          "updated_at"
+        ],
+        "title": "RetentionPolicyView",
         "type": "object"
       },
       "RetryPolicy": {
@@ -2932,6 +5028,97 @@
         "title": "SkillLifecycleInput",
         "type": "object"
       },
+      "SourcePlan": {
+        "additionalProperties": false,
+        "description": "Bounded evidence-source priorities, never executable provider instructions.",
+        "properties": {
+          "fallback_sources": {
+            "default": [],
+            "items": {
+              "enum": [
+                "STRUCTURED_DATA",
+                "OFFICIAL_OR_FIRST_PARTY",
+                "INDEPENDENT_MEDIA",
+                "ACADEMIC",
+                "SELECTED_DOCUMENT",
+                "WORKSPACE_KNOWLEDGE",
+                "GENERAL_WEB",
+                "USER_GENERATED",
+                "PARAMETRIC_KNOWLEDGE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Fallback Sources",
+            "type": "array"
+          },
+          "forbidden_sources": {
+            "default": [],
+            "items": {
+              "enum": [
+                "STRUCTURED_DATA",
+                "OFFICIAL_OR_FIRST_PARTY",
+                "INDEPENDENT_MEDIA",
+                "ACADEMIC",
+                "SELECTED_DOCUMENT",
+                "WORKSPACE_KNOWLEDGE",
+                "GENERAL_WEB",
+                "USER_GENERATED",
+                "PARAMETRIC_KNOWLEDGE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Forbidden Sources",
+            "type": "array"
+          },
+          "preferred_sources": {
+            "default": [],
+            "items": {
+              "enum": [
+                "STRUCTURED_DATA",
+                "OFFICIAL_OR_FIRST_PARTY",
+                "INDEPENDENT_MEDIA",
+                "ACADEMIC",
+                "SELECTED_DOCUMENT",
+                "WORKSPACE_KNOWLEDGE",
+                "GENERAL_WEB",
+                "USER_GENERATED",
+                "PARAMETRIC_KNOWLEDGE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Preferred Sources",
+            "type": "array"
+          },
+          "required_sources": {
+            "items": {
+              "enum": [
+                "PUBLIC_WEB",
+                "SELECTED_DOCUMENT",
+                "WORKSPACE_KNOWLEDGE"
+              ],
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Required Sources",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "required_sources"
+        ],
+        "title": "SourcePlan",
+        "type": "object"
+      },
       "StepAttempt": {
         "additionalProperties": false,
         "properties": {
@@ -3035,6 +5222,66 @@
         ],
         "title": "StepState",
         "type": "string"
+      },
+      "TaskCompletionView": {
+        "additionalProperties": false,
+        "properties": {
+          "completion_status": {
+            "$ref": "#/components/schemas/CompletionStatus"
+          },
+          "delivery_decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeliveryDecision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclosure": {
+            "title": "Disclosure",
+            "type": "string"
+          },
+          "execution_status": {
+            "$ref": "#/components/schemas/TaskState"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "unresolved_requirement_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Unresolved Requirement Ids",
+            "type": "array"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id",
+          "task_id",
+          "execution_status",
+          "completion_status",
+          "delivery_decision",
+          "unresolved_requirement_ids",
+          "disclosure"
+        ],
+        "title": "TaskCompletionView",
+        "type": "object"
       },
       "TaskGoal": {
         "additionalProperties": false,
@@ -3143,6 +5390,27 @@
           "decision"
         ],
         "title": "TaskModifyInput",
+        "type": "object"
+      },
+      "TaskResultMessageCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id"
+        ],
+        "title": "TaskResultMessageCreate",
         "type": "object"
       },
       "TaskState": {
@@ -3303,6 +5571,73 @@
           "goal"
         ],
         "title": "TaskView",
+        "type": "object"
+      },
+      "TemporalFrame": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "STABLE",
+              "CURRENT",
+              "HISTORICAL",
+              "FUTURE"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "end_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End At"
+          },
+          "expression": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expression"
+          },
+          "requires_fresh_information": {
+            "title": "Requires Fresh Information",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "start_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start At"
+          }
+        },
+        "required": [
+          "direction",
+          "requires_fresh_information"
+        ],
+        "title": "TemporalFrame",
         "type": "object"
       },
       "TraceNode": {
@@ -3579,6 +5914,106 @@
         "title": "WorkspaceCreate",
         "type": "object"
       },
+      "WorkspaceDeletionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "exclusiveMinimum": 0.0,
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "retain_audit_tombstone": {
+            "default": true,
+            "title": "Retain Audit Tombstone",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "WorkspaceDeletionRequest",
+        "type": "object"
+      },
+      "WorkspaceDeletionView": {
+        "additionalProperties": false,
+        "properties": {
+          "active_task_count": {
+            "minimum": 0.0,
+            "title": "Active Task Count",
+            "type": "integer"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "safe_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Safe Error"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "workspace_id",
+          "state",
+          "version",
+          "active_task_count",
+          "safe_error",
+          "requested_at",
+          "completed_at"
+        ],
+        "title": "WorkspaceDeletionView",
+        "type": "object"
+      },
       "WorkspaceView": {
         "additionalProperties": false,
         "properties": {
@@ -3639,6 +6074,83 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/agent-task-turns": {
+      "post": {
+        "description": "Atomically bind a planned durable Agent Task to its conversation Turn.\n\nThe chat outcome is the durable-task acknowledgement; the independently\ngoverned Task continues in Temporal and remains visible in Tasks.",
+        "operationId": "agent_task_turn_create_agent_task_turns_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchTurnCreateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchTurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Agent Task Turn Create"
+      }
+    },
     "/approvals": {
       "get": {
         "operationId": "approval_list_approvals_get",
@@ -4558,6 +7070,82 @@
         "summary": "Capability List"
       }
     },
+    "/chat/route": {
+      "post": {
+        "operationId": "chat_route_chat_route_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRouteInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatRouteView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Chat Route"
+      }
+    },
     "/chat/stream": {
       "post": {
         "operationId": "chat_stream_chat_stream_post",
@@ -4788,6 +7376,85 @@
         "summary": "Conversation Create"
       }
     },
+    "/conversations/{conversation_id}": {
+      "delete": {
+        "operationId": "conversation_delete_conversations__conversation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationDeleteInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Conversation Delete"
+      }
+    },
     "/conversations/{conversation_id}/messages": {
       "get": {
         "operationId": "conversation_message_list_conversations__conversation_id__messages_get",
@@ -4835,7 +7502,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ConversationMessage"
+                    "$ref": "#/components/schemas/ConversationTimelineMessage"
                   },
                   "title": "Response Conversation Message List Conversations  Conversation Id  Messages Get",
                   "type": "array"
@@ -4960,6 +7627,102 @@
           }
         },
         "summary": "Conversation Message Create"
+      }
+    },
+    "/conversations/{conversation_id}/task-results/{task_id}": {
+      "post": {
+        "operationId": "conversation_task_result_create_conversations__conversation_id__task_results__task_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskResultMessageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationMessage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Conversation Task Result Create"
       }
     },
     "/documents": {
@@ -5594,6 +8357,85 @@
         "summary": "Knowledge Upload"
       }
     },
+    "/knowledge/documents/{document_id}": {
+      "delete": {
+        "operationId": "knowledge_delete_knowledge_documents__document_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeDocumentDeleteInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Knowledge Delete"
+      }
+    },
     "/knowledge/documents/{ingestion_id}": {
       "get": {
         "operationId": "knowledge_get_knowledge_documents__ingestion_id__get",
@@ -5678,6 +8520,178 @@
           }
         },
         "summary": "Knowledge Get"
+      }
+    },
+    "/knowledge/documents/{ingestion_id}/preview": {
+      "get": {
+        "operationId": "knowledge_preview_knowledge_documents__ingestion_id__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ingestion Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeDocumentPreviewView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Knowledge Preview"
+      }
+    },
+    "/knowledge/documents/{ingestion_id}/retry": {
+      "post": {
+        "operationId": "knowledge_retry_knowledge_documents__ingestion_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Ingestion Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeIngestionRetryInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeIngestionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Knowledge Retry"
       }
     },
     "/mcp": {
@@ -6246,6 +9260,92 @@
         "summary": "Model Config Create"
       }
     },
+    "/models/{config_id}": {
+      "put": {
+        "operationId": "model_config_update_models__config_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Config Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConfigUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelConfigView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Model Config Update"
+      }
+    },
     "/models/{config_id}/probe": {
       "post": {
         "operationId": "model_config_probe_models__config_id__probe_post",
@@ -6330,6 +9430,168 @@
           }
         },
         "summary": "Model Config Probe"
+      }
+    },
+    "/models/{config_id}/state": {
+      "post": {
+        "operationId": "model_config_state_models__config_id__state_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Config Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConfigStateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelConfigView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Model Config State"
+      }
+    },
+    "/research-turns": {
+      "post": {
+        "operationId": "research_turn_create_research_turns_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchTurnCreateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchTurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Research Turn Create"
       }
     },
     "/skills": {
@@ -7387,6 +10649,82 @@
         "summary": "Usage List"
       }
     },
+    "/workspace-deletions/{request_id}": {
+      "get": {
+        "operationId": "workspace_deletion_get_workspace_deletions__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDeletionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Workspace Deletion Get"
+      }
+    },
     "/workspaces": {
       "get": {
         "operationId": "workspace_list_workspaces_get",
@@ -7532,6 +10870,90 @@
       }
     },
     "/workspaces/{workspace_id}": {
+      "delete": {
+        "operationId": "workspace_delete_workspaces__workspace_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceDeletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDeletionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Workspace Delete"
+      },
       "get": {
         "operationId": "workspace_get_workspaces__workspace_id__get",
         "parameters": [
@@ -7685,6 +11107,166 @@
           }
         },
         "summary": "Conversation List"
+      }
+    },
+    "/workspaces/{workspace_id}/retention": {
+      "get": {
+        "operationId": "workspace_retention_get_workspaces__workspace_id__retention_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionPolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Workspace Retention Get"
+      },
+      "put": {
+        "operationId": "workspace_retention_update_workspaces__workspace_id__retention_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetentionPolicyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionPolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Workspace Retention Update"
       }
     },
     "/workspaces/{workspace_id}/tasks": {
@@ -7851,6 +11433,96 @@
           }
         },
         "summary": "Task Get"
+      }
+    },
+    "/workspaces/{workspace_id}/tasks/{task_id}/assessments": {
+      "get": {
+        "operationId": "task_assessments_workspaces__workspace_id__tasks__task_id__assessments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RequirementAssessmentView"
+                  },
+                  "title": "Response Task Assessments Workspaces  Workspace Id  Tasks  Task Id  Assessments Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Task Assessments"
       }
     },
     "/workspaces/{workspace_id}/tasks/{task_id}/attempts": {
@@ -8037,6 +11709,186 @@
           }
         },
         "summary": "Task Cancel"
+      }
+    },
+    "/workspaces/{workspace_id}/tasks/{task_id}/completion": {
+      "get": {
+        "operationId": "task_completion_workspaces__workspace_id__tasks__task_id__completion_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCompletionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Task Completion"
+      }
+    },
+    "/workspaces/{workspace_id}/tasks/{task_id}/delivery": {
+      "get": {
+        "operationId": "task_delivery_workspaces__workspace_id__tasks__task_id__delivery_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DeliveryDecision"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Task Delivery Workspaces  Workspace Id  Tasks  Task Id  Delivery Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Task Delivery"
       }
     },
     "/workspaces/{workspace_id}/tasks/{task_id}/evidence": {
@@ -8313,6 +12165,96 @@
           }
         },
         "summary": "Task Plan List"
+      }
+    },
+    "/workspaces/{workspace_id}/tasks/{task_id}/requirements": {
+      "get": {
+        "operationId": "task_requirements_workspaces__workspace_id__tasks__task_id__requirements_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Requirement"
+                  },
+                  "title": "Response Task Requirements Workspaces  Workspace Id  Tasks  Task Id  Requirements Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Policy or identity denied"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Domain consistency conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Contract validation failed"
+          }
+        },
+        "summary": "Task Requirements"
       }
     },
     "/workspaces/{workspace_id}/tasks/{task_id}/resume": {

@@ -183,6 +183,64 @@ async def acquire_attempt(
     await session.flush()
     return attempt
 
+async def renew_attempt_lease(
+    session: AsyncSession,
+    workspace_id: UUID,
+    attempt_id: UUID,
+    token: int,
+    *,
+    lease_seconds: int = 60,
+) -> AttemptRow:
+    if lease_seconds < 1:
+        raise DomainError(FailureCode.VALIDATION_FAILED, "lease must be positive")
+    attempt = await session.scalar(
+        select(AttemptRow).where(
+            AttemptRow.workspace_id == workspace_id,
+            AttemptRow.id == attempt_id,
+        )
+    )
+    if attempt is None:
+        raise DomainError(FailureCode.STALE_ATTEMPT, "attempt unavailable")
+    task_id = await session.scalar(
+        select(StepRow.task_id).where(
+            StepRow.workspace_id == workspace_id,
+            StepRow.id == attempt.step_id,
+        )
+    )
+    if task_id is None:
+        raise DomainError(FailureCode.STALE_ATTEMPT, "attempt step unavailable")
+    await lock_task_runtime(session, workspace_id, task_id)
+    step = await session.scalar(
+        select(StepRow)
+        .where(
+            StepRow.workspace_id == workspace_id,
+            StepRow.id == attempt.step_id,
+        )
+        .with_for_update()
+    )
+    now = await session.scalar(select(func.clock_timestamp()))
+    if (
+        step is None
+        or now is None
+        or attempt.state != AttemptState.RUNNING
+        or StepState(step.state) is not StepState.RUNNING
+        or token != step.fencing_token
+        or token != attempt.fencing_token
+        or step.lease_expires_at is None
+        or step.lease_expires_at <= now
+        or attempt.lease_expires_at <= now
+    ):
+        raise DomainError(
+            FailureCode.STALE_ATTEMPT, "attempt lease renewal rejected"
+        )
+    renewed_until = now + timedelta(seconds=lease_seconds)
+    step.lease_expires_at = renewed_until
+    attempt.lease_expires_at = renewed_until
+    await session.flush()
+    return attempt
+
+
+
 
 async def fail_attempt(
     session: AsyncSession,

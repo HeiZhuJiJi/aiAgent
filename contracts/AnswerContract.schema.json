@@ -1,0 +1,130 @@
+{
+  "additionalProperties": false,
+  "description": "The user-visible answer shape and minimum evidence needed to satisfy it.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "answer_type": {
+      "enum": [
+        "FACT",
+        "SUMMARY",
+        "LIST",
+        "TIMELINE",
+        "COMPARISON",
+        "EXPLANATION",
+        "FORECAST",
+        "DOCUMENT_SUMMARY",
+        "DOCUMENT_QA"
+      ],
+      "title": "Answer Type",
+      "type": "string"
+    },
+    "required_aspects": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6,
+      "minItems": 1,
+      "title": "Required Aspects",
+      "type": "array"
+    },
+    "completeness": {
+      "enum": [
+        "COMPLETE",
+        "BEST_EFFORT"
+      ],
+      "title": "Completeness",
+      "type": "string"
+    },
+    "freshness": {
+      "enum": [
+        "STABLE",
+        "CURRENT",
+        "HISTORICAL",
+        "SOURCE_BOUND"
+      ],
+      "title": "Freshness",
+      "type": "string"
+    },
+    "minimum_answer_items": {
+      "anyOf": [
+        {
+          "maximum": 8,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minimum Answer Items"
+    },
+    "maximum_answer_items": {
+      "anyOf": [
+        {
+          "maximum": 8,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maximum Answer Items"
+    },
+    "require_explicit_dates": {
+      "title": "Require Explicit Dates",
+      "type": "boolean"
+    },
+    "minimum_evidence_items": {
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Minimum Evidence Items",
+      "type": "integer"
+    },
+    "minimum_independent_sources": {
+      "maximum": 3,
+      "minimum": 1,
+      "title": "Minimum Independent Sources",
+      "type": "integer"
+    },
+    "partial_answer_policy": {
+      "enum": [
+        "ALLOW_SUPPORTED_ONLY",
+        "REQUIRE_COMPLETE"
+      ],
+      "title": "Partial Answer Policy",
+      "type": "string"
+    },
+    "organization": {
+      "enum": [
+        "CONCISE",
+        "BULLETS",
+        "TIMELINE",
+        "COMPARISON",
+        "STRUCTURED_SUMMARY"
+      ],
+      "title": "Organization",
+      "type": "string"
+    }
+  },
+  "required": [
+    "answer_type",
+    "required_aspects",
+    "completeness",
+    "freshness",
+    "require_explicit_dates",
+    "minimum_evidence_items",
+    "minimum_independent_sources",
+    "partial_answer_policy",
+    "organization"
+  ],
+  "title": "AnswerContract",
+  "type": "object"
+}

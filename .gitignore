@@ -5,8 +5,16 @@ __pycache__/
 .ruff_cache/
 node_modules/
 dist/
+apps/web/test-results/
+apps/web/playwright-report/
 *.tsbuildinfo
 .env
 work/
 
 .venv312/
+
+# Local IDE and test-run artifacts
+/.idea/
+/.pytest_live_quality_*/
+/.pytest_tmp/
+/.test-tmp-*/

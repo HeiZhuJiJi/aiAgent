@@ -1,6 +1,6 @@
 import asyncio
 import os
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import func, select, update
@@ -16,7 +16,7 @@ from enterprise_agent.storage.outbox import (
     mark_published,
     reschedule,
 )
-from enterprise_agent.storage.tables import OutboxEventRow
+from enterprise_agent.storage.tables import OutboxEventRow, Workspace
 from tests.integration.test_fencing import seed
 
 
@@ -116,6 +116,136 @@ async def test_expired_lease_is_refenced_and_old_publisher_is_rejected(database)
     assert retry is not None and retry.attempts == 3
     async with database.begin() as session:
         await mark_published(session, retry, "worker-retry")
+
+
+async def test_global_claims_round_robin_across_workspaces(database):
+    first_value = uuid4().int & ~1
+    workspace_a = UUID(int=first_value)
+    workspace_b = UUID(int=first_value + 1)
+    async with database.begin() as session:
+        session.add_all(
+            (
+                Workspace(id=workspace_a, name="fairness-a"),
+                Workspace(id=workspace_b, name="fairness-b"),
+            )
+        )
+        await session.flush()
+        for index in range(3):
+            event_id = uuid4()
+            await enqueue(
+                session,
+                event_id,
+                workspace_a,
+                "TaskRun",
+                event_id,
+                "task.test",
+                {"workspace": "a", "index": index},
+            )
+        event_b = uuid4()
+        await enqueue(
+            session,
+            event_b,
+            workspace_b,
+            "TaskRun",
+            event_b,
+            "task.test",
+            {"workspace": "b"},
+        )
+
+    async with database.begin() as blocker:
+        await blocker.execute(
+            select(OutboxEventRow)
+            .where(
+                OutboxEventRow.workspace_id.not_in((workspace_a, workspace_b)),
+                OutboxEventRow.state.in_(("PENDING", "LEASED")),
+            )
+            .with_for_update()
+        )
+        async with database.begin() as session:
+            first = await claim_next(session, "fair-worker")
+        assert first is not None and first.workspace_id == workspace_a
+        async with database.begin() as session:
+            await mark_published(session, first, "fair-worker")
+        async with database.begin() as session:
+            second = await claim_next(
+                session,
+                "fair-worker",
+                after_workspace_id=first.workspace_id,
+            )
+        assert second is not None and second.workspace_id == workspace_b
+        async with database.begin() as session:
+            await mark_published(session, second, "fair-worker")
+        async with database.begin() as session:
+            wrapped = await claim_next(
+                session,
+                "fair-worker",
+                after_workspace_id=second.workspace_id,
+            )
+        assert wrapped is not None and wrapped.workspace_id == workspace_a
+
+
+async def test_claim_filter_does_not_cross_task_queues(database):
+    workspace_id, task_id, _ = await seed(database)
+    queue_a_event = uuid4()
+    queue_b_event = uuid4()
+    unknown_event = uuid4()
+    async with database.begin() as session:
+        await enqueue(
+            session,
+            queue_a_event,
+            workspace_id,
+            "TASK_RUN",
+            task_id,
+            "task.execution.requested",
+            {"task_queue": "queue-a", "task_id": str(task_id)},
+        )
+        await enqueue(
+            session,
+            queue_b_event,
+            workspace_id,
+            "TASK_RUN",
+            task_id,
+            "task.execution.requested",
+            {"task_queue": "queue-b", "task_id": str(task_id)},
+        )
+        await enqueue(
+            session,
+            unknown_event,
+            workspace_id,
+            "TASK_RUN",
+            task_id,
+            "task.test",
+            {"task_queue": "queue-a", "task_id": str(task_id)},
+        )
+
+    async with database.begin() as session:
+        first = await claim_next(
+            session,
+            "queue-a-worker",
+            workspace_id=workspace_id,
+            allowed_task_queues=("queue-a",),
+        )
+    assert first is not None and first.event_id == queue_a_event
+    async with database.begin() as session:
+        await mark_published(session, first, "queue-a-worker")
+    async with database.begin() as session:
+        second = await claim_next(
+            session,
+            "queue-a-worker",
+            workspace_id=workspace_id,
+            allowed_task_queues=("queue-a",),
+        )
+    assert second is None
+    async with database() as session:
+        rows = (
+            await session.scalars(
+                select(OutboxEventRow)
+                .where(OutboxEventRow.id.in_((queue_b_event, unknown_event)))
+                .order_by(OutboxEventRow.id)
+            )
+        ).all()
+    assert [row.id for row in rows] == sorted((queue_b_event, unknown_event))
+    assert all(row.state == "PENDING" for row in rows)
 
 
 async def test_knowledge_workflow_start_reconciles_duplicate_publish():

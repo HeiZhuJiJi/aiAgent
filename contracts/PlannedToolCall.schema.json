@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "Risk": {
+      "enum": [
+        "READ",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL_SIDE_EFFECT"
+      ],
+      "title": "Risk",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tool_name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Tool Name",
+      "type": "string"
+    },
+    "purpose": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Purpose",
+      "type": "string"
+    },
+    "arguments": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Arguments",
+      "type": "object"
+    },
+    "risk": {
+      "$ref": "#/$defs/Risk",
+      "default": "READ"
+    }
+  },
+  "required": [
+    "tool_name",
+    "purpose"
+  ],
+  "title": "PlannedToolCall",
+  "type": "object"
+}

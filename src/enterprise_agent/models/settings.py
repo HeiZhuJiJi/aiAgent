@@ -53,10 +53,11 @@ def _load_settings(
         )
     if mode == "local":
         host = parsed.hostname
+        allowed_hosts = {"localhost", "host.docker.internal"}
+        if prefix == "EMBEDDING":
+            allowed_hosts.add("embedding")
         try:
-            loopback = host in {"localhost", "host.docker.internal"} or ip_address(
-                str(host)
-            ).is_loopback
+            loopback = host in allowed_hosts or ip_address(str(host)).is_loopback
         except ValueError:
             loopback = False
         if not loopback:

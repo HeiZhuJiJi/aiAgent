@@ -1,0 +1,439 @@
+{
+  "schema_version": 1,
+  "suite_version": "2026-09-final-validation",
+  "evidence_mode": "CONTROLLED_ACCEPTANCE",
+  "bindings": [
+    {
+      "case_id": "knowledge-qa-01-answer-an-effective-date-policy-question-with-a-page-citation",
+      "pytest_nodes": [
+        "tests/integration/test_knowledge.py::test_real_postgres_fts_pgvector_and_version_replay"
+      ]
+    },
+    {
+      "case_id": "knowledge-qa-02-resolve-conflicting-document-versions-using-the-latest-immutable-versi",
+      "pytest_nodes": [
+        "tests/integration/test_knowledge.py::test_end_to_end_parse_embed_minio_and_postgres_ingestion"
+      ]
+    },
+    {
+      "case_id": "knowledge-qa-03-return-unknown-when-the-knowledge-base-lacks-the-requested-fact",
+      "pytest_nodes": [
+        "tests/unit/test_retrieval.py::test_hybrid_retrieval_rejects_identity_drift_and_bad_reranker"
+      ]
+    },
+    {
+      "case_id": "knowledge-qa-04-cite-a-spreadsheet-row-and-stable-document-version",
+      "pytest_nodes": [
+        "tests/unit/test_document_parser.py::test_pdf_docx_pptx_and_xlsx_locators"
+      ]
+    },
+    {
+      "case_id": "knowledge-qa-05-combine-two-internal-policy-passages-without-losing-provenance",
+      "pytest_nodes": [
+        "tests/integration/test_provenance.py::test_claim_and_evidence_links_are_idempotent_and_hash_verified"
+      ]
+    },
+    {
+      "case_id": "knowledge-qa-06-reject-a-retrieved-passage-whose-stored-content-hash-no-longer-matches",
+      "pytest_nodes": [
+        "tests/integration/test_knowledge.py::test_database_rejects_knowledge_version_or_chunk_mutation[statement0]"
+      ]
+    },
+    {
+      "case_id": "complex-research-01-combine-internal-policy-supplier-history-and-public-registry-evidence",
+      "pytest_nodes": [
+        "tests/integration/test_builtin_capabilities.py::test_builtin_capabilities_use_real_postgres_http_model_web_and_minio"
+      ]
+    },
+    {
+      "case_id": "complex-research-02-research-sanctions-and-litigation-while-retaining-url-and-retrieval-ti",
+      "pytest_nodes": [
+        "tests/security/test_prompt_injection.py::test_malicious_pdf_and_web_cannot_authorize_external_side_effect"
+      ]
+    },
+    {
+      "case_id": "complex-research-03-separate-verified-facts-from-untrusted-public-allegations",
+      "pytest_nodes": [
+        "tests/unit/test_reviewer.py::test_review_rejects_missing_deliverable_and_unsupported_risk_claim"
+      ]
+    },
+    {
+      "case_id": "complex-research-04-synthesize-parallel-research-branches-into-cited-findings",
+      "pytest_nodes": [
+        "tests/e2e/test_supplier_risk_flagship.py::test_supplier_full_temporal_evidence_report_and_conditional_admission[0-Supplier A-ADMIT-True-False]"
+      ]
+    },
+    {
+      "case_id": "complex-research-05-identify-evidence-conflicts-and-preserve-both-source-identities",
+      "pytest_nodes": [
+        "tests/integration/test_provenance.py::test_claim_rejects_missing_or_cross_workspace_evidence"
+      ]
+    },
+    {
+      "case_id": "complex-research-06-complete-bounded-research-without-exceeding-the-task-budget",
+      "pytest_nodes": [
+        "tests/integration/test_budgets.py::test_concurrent_budget_reservations_are_atomic_and_fail_closed"
+      ]
+    },
+    {
+      "case_id": "skill-01-install-and-execute-the-signed-supplier-risk-skill-version",
+      "pytest_nodes": [
+        "tests/integration/test_api_skills.py::test_skill_quarantine_confirm_enable_disable_and_rejected_archive"
+      ]
+    },
+    {
+      "case_id": "skill-02-reject-a-skill-archive-with-path-traversal",
+      "pytest_nodes": [
+        "tests/security/test_skill_package.py::test_skill_rejects_executable_and_unsafe_archive_paths[../escape.py]"
+      ]
+    },
+    {
+      "case_id": "skill-03-require-confirmation-when-a-new-skill-version-expands-permissions",
+      "pytest_nodes": [
+        "tests/integration/test_api_skills.py::test_skill_quarantine_confirm_enable_disable_and_rejected_archive"
+      ]
+    },
+    {
+      "case_id": "skill-04-keep-an-existing-task-pinned-to-its-installed-skill-snapshot",
+      "pytest_nodes": [
+        "tests/integration/test_immutable_plans.py::test_snapshot_and_plan_replay_is_idempotent_and_versions_are_append_only"
+      ]
+    },
+    {
+      "case_id": "skill-05-disable-a-skill-for-new-tasks-while-an-older-task-remains-reproducible",
+      "pytest_nodes": [
+        "tests/integration/test_api_skills.py::test_skill_quarantine_confirm_enable_disable_and_rejected_archive"
+      ]
+    },
+    {
+      "case_id": "skill-06-reject-a-skill-whose-workflow-references-an-undeclared-capability",
+      "pytest_nodes": [
+        "tests/security/test_skill_package.py::test_missing_dependency_rejected"
+      ]
+    },
+    {
+      "case_id": "mcp-01-discover-and-call-the-procurement-supplier-profile-tool",
+      "pytest_nodes": [
+        "tests/integration/test_procurement.py::test_real_mcp_process_discovery_create_lookup"
+      ]
+    },
+    {
+      "case_id": "mcp-02-read-purchase-history-through-the-independently-persisted-mcp-service",
+      "pytest_nodes": [
+        "tests/integration/test_api_mcp.py::test_procurement_mcp_register_discover_health_disable_and_normalize"
+      ]
+    },
+    {
+      "case_id": "mcp-03-detect-a-changed-mcp-schema-hash-before-dispatch",
+      "pytest_nodes": [
+        "tests/integration/test_api_mcp.py::test_active_mcp_snapshot_builds_real_stdio_capability_adapter"
+      ]
+    },
+    {
+      "case_id": "mcp-04-reconnect-an-unhealthy-procurement-mcp-registration",
+      "pytest_nodes": [
+        "tests/failure/test_deterministic_injection.py::test_mcp_disconnect_health_detects_and_reconnects_real_stdio_server"
+      ]
+    },
+    {
+      "case_id": "mcp-05-reject-an-mcp-response-with-an-invalid-output-schema",
+      "pytest_nodes": [
+        "tests/integration/test_capability_executor.py::test_read_only_call_validates_schema_and_replays_once"
+      ]
+    },
+    {
+      "case_id": "mcp-06-keep-mcp-output-as-evidence-without-granting-new-permission",
+      "pytest_nodes": [
+        "tests/integration/test_plan_temporal_mcp.py::test_outbox_temporal_plan_executes_real_governed_mcp_step"
+      ]
+    },
+    {
+      "case_id": "planner-01-create-a-valid-supplier-risk-dag-with-four-parallel-research-roots",
+      "pytest_nodes": [
+        "tests/integration/test_skill_planner.py::test_enabled_skill_generates_immutable_plan_without_runtime_business_code"
+      ]
+    },
+    {
+      "case_id": "planner-02-reject-a-plan-containing-an-unknown-dependency",
+      "pytest_nodes": [
+        "tests/unit/test_contracts.py::test_invalid_dag[steps0]"
+      ]
+    },
+    {
+      "case_id": "planner-03-reject-a-cyclic-plan-before-any-step-dispatch",
+      "pytest_nodes": [
+        "tests/unit/test_contracts.py::test_invalid_dag[steps1]"
+      ]
+    },
+    {
+      "case_id": "planner-04-pin-every-capability-version-to-the-execution-snapshot",
+      "pytest_nodes": [
+        "tests/integration/test_immutable_plans.py::test_plan_cannot_bind_snapshot_from_another_workspace"
+      ]
+    },
+    {
+      "case_id": "planner-05-schedule-nonparallel-review-after-all-evidence-dependencies",
+      "pytest_nodes": [
+        "tests/integration/test_plan_step_lifecycle.py::test_plan_dag_unlocks_join_and_completes_task_atomically"
+      ]
+    },
+    {
+      "case_id": "planner-06-keep-external-side-effects-after-report-and-policy-review",
+      "pytest_nodes": [
+        "tests/integration/test_plan_temporal_mcp.py::test_plan_waits_for_human_then_executes_one_real_procurement_write"
+      ]
+    },
+    {
+      "case_id": "replan-supplier-c-evidence-gap",
+      "pytest_nodes": [
+        "tests/e2e/test_supplier_risk_flagship.py::test_supplier_full_temporal_evidence_report_and_conditional_admission[2-Supplier C-REJECT-False-True]"
+      ]
+    },
+    {
+      "case_id": "replan-02-retry-a-failed-read-capability-within-the-frozen-capability-set",
+      "pytest_nodes": [
+        "tests/integration/test_replans.py::test_replan_actions_append_plan_and_preserve_completed_work[RETRY_STEP-expected_states3]"
+      ]
+    },
+    {
+      "case_id": "replan-03-replace-a-failed-step-while-preserving-completed-evidence-steps",
+      "pytest_nodes": [
+        "tests/integration/test_replans.py::test_replan_actions_append_plan_and_preserve_completed_work[REPLACE_STEP-expected_states1]"
+      ]
+    },
+    {
+      "case_id": "replan-04-abort-when-a-proposed-replan-escalates-permissions",
+      "pytest_nodes": [
+        "tests/integration/test_replans.py::test_abort_and_budget_denial_leave_no_untracked_plan"
+      ]
+    },
+    {
+      "case_id": "replan-05-stop-after-the-consecutive-replan-loop-limit",
+      "pytest_nodes": [
+        "tests/integration/test_loop_guard.py::test_fourth_consecutive_replan_aborts_task"
+      ]
+    },
+    {
+      "case_id": "replan-06-retain-immutable-plan-v1-and-append-plan-v2",
+      "pytest_nodes": [
+        "tests/integration/test_replans.py::test_replan_decision_is_immutable_and_divergent_replay_is_rejected"
+      ]
+    },
+    {
+      "case_id": "permission-01-deny-a-member-attempting-an-administrator-only-action",
+      "pytest_nodes": [
+        "tests/security/test_policy.py::test_member_denied"
+      ]
+    },
+    {
+      "case_id": "permission-02-deny-cross-workspace-task-access",
+      "pytest_nodes": [
+        "tests/security/test_policy.py::test_cross_workspace_denied"
+      ]
+    },
+    {
+      "case_id": "permission-03-deny-confidential-data-egress-to-an-external-model",
+      "pytest_nodes": [
+        "tests/security/test_policy.py::test_egress_denied[CONFIDENTIAL]"
+      ]
+    },
+    {
+      "case_id": "permission-04-deny-a-capability-absent-from-the-execution-snapshot-allowlist",
+      "pytest_nodes": [
+        "tests/security/test_policy.py::test_allowlist_denied"
+      ]
+    },
+    {
+      "case_id": "permission-05-allow-an-auditor-to-read-audit-history-without-mutation-rights",
+      "pytest_nodes": [
+        "tests/integration/test_api_audit.py::test_audit_api_requires_explicit_permission_and_workspace_membership"
+      ]
+    },
+    {
+      "case_id": "permission-06-treat-document-prompt-injection-as-data-without-permission-escalation",
+      "pytest_nodes": [
+        "tests/security/test_prompt_injection.py::test_malicious_pdf_and_web_cannot_authorize_external_side_effect"
+      ]
+    },
+    {
+      "case_id": "hitl-supplier-a-admission",
+      "pytest_nodes": [
+        "tests/security/test_hitl.py::test_external_effect_cannot_dispatch_without_matching_approval"
+      ]
+    },
+    {
+      "case_id": "hitl-02-reject-approval-replay-after-its-immutable-terminal-decision",
+      "pytest_nodes": [
+        "tests/security/test_hitl.py::test_approved_operation_resumes_with_new_attempt_and_is_audited"
+      ]
+    },
+    {
+      "case_id": "hitl-03-expire-an-approval-using-the-database-clock",
+      "pytest_nodes": [
+        "tests/security/test_hitl.py::test_expired_request_never_moves_task_into_hitl"
+      ]
+    },
+    {
+      "case_id": "hitl-04-deny-approval-by-a-nonadministrator-workspace-member",
+      "pytest_nodes": [
+        "tests/integration/test_api_approvals.py::test_approval_api_enforces_workspace_admin_and_optimistic_version"
+      ]
+    },
+    {
+      "case_id": "hitl-05-bind-approval-evidence-ids-and-policy-version-before-dispatch",
+      "pytest_nodes": [
+        "tests/failure/test_response_loss.py::test_stable_operation_rejects_changed_parameters"
+      ]
+    },
+    {
+      "case_id": "hitl-06-resume-the-exact-operation-after-an-approved-temporal-signal",
+      "pytest_nodes": [
+        "tests/integration/test_hitl_temporal_signal.py::test_temporal_signal_resumes_from_canonical_postgres_approval"
+      ]
+    },
+    {
+      "case_id": "failure-01-classify-and-repair-a-corrupted-structured-model-response",
+      "pytest_nodes": [
+        "tests/failure/test_deterministic_injection.py::test_llm_schema_corruption_exhausts_two_repairs_with_schema_error"
+      ]
+    },
+    {
+      "case_id": "failure-02-classify-an-llm-timeout-and-apply-the-bounded-retry-matrix",
+      "pytest_nodes": [
+        "tests/failure/test_deterministic_injection.py::test_model_transport_failure_is_injected_once_then_retried[LLM_TIMEOUT]"
+      ]
+    },
+    {
+      "case_id": "failure-03-honor-retry-after-behavior-for-an-llm-429-response",
+      "pytest_nodes": [
+        "tests/failure/test_deterministic_injection.py::test_model_transport_failure_is_injected_once_then_retried[LLM_429]"
+      ]
+    },
+    {
+      "case_id": "failure-04-classify-an-mcp-disconnect-without-fabricating-evidence",
+      "pytest_nodes": [
+        "tests/failure/test_deterministic_injection.py::test_mcp_disconnect_health_detects_and_reconnects_real_stdio_server"
+      ]
+    },
+    {
+      "case_id": "failure-05-reject-a-context-bundle-that-exceeds-its-token-ceiling",
+      "pytest_nodes": [
+        "tests/unit/test_context_manager.py::test_context_budget_records_excluded_uncompressible_candidate"
+      ]
+    },
+    {
+      "case_id": "failure-06-surface-database-unavailability-as-a-safe-typed-failure",
+      "pytest_nodes": [
+        "tests/integration/test_reconciler.py::test_unrepairable_task_records_manual_incident_without_aborting_repairs"
+      ]
+    },
+    {
+      "case_id": "recovery-01-resume-after-killing-the-independent-temporal-worker-process",
+      "pytest_nodes": [
+        "tests/failure/test_worker_crash.py::test_actual_worker_process_crash_resumes_without_recommitting_completed_step"
+      ]
+    },
+    {
+      "case_id": "recovery-02-reconcile-an-unknown-side-effect-after-response-loss",
+      "pytest_nodes": [
+        "tests/failure/test_response_loss.py::test_lost_response_reconciles_without_duplicate_side_effect"
+      ]
+    },
+    {
+      "case_id": "recovery-03-reject-a-zombie-worker-result-with-a-stale-fencing-token",
+      "pytest_nodes": [
+        "tests/failure/test_response_loss.py::test_zombie_cannot_record_side_effect_outcome"
+      ]
+    },
+    {
+      "case_id": "recovery-04-replay-a-native-idempotent-dispatch-with-the-same-dispatch-identity",
+      "pytest_nodes": [
+        "tests/integration/test_capability_executor.py::test_native_idempotent_dispatch_resumes_after_worker_cancellation"
+      ]
+    },
+    {
+      "case_id": "recovery-05-recover-an-expired-outbox-lease-without-duplicate-publication",
+      "pytest_nodes": [
+        "tests/integration/test_outbox.py::test_expired_lease_is_refenced_and_old_publisher_is_rejected"
+      ]
+    },
+    {
+      "case_id": "recovery-06-continue-as-new-from-a-postgresql-validated-checkpoint",
+      "pytest_nodes": [
+        "tests/integration/test_temporal_continue_as_new.py::test_real_temporal_continues_with_only_frozen_minimal_payload"
+      ]
+    },
+    {
+      "case_id": "side-effect-01-create-exactly-one-approved-supplier-a-admission",
+      "pytest_nodes": [
+        "tests/e2e/test_supplier_risk_flagship.py::test_supplier_full_temporal_evidence_report_and_conditional_admission[0-Supplier A-ADMIT-True-False]"
+      ]
+    },
+    {
+      "case_id": "side-effect-supplier-b-noop",
+      "pytest_nodes": [
+        "tests/e2e/test_supplier_risk_flagship.py::test_supplier_full_temporal_evidence_report_and_conditional_admission[1-Supplier B-REJECT-False-False]"
+      ]
+    },
+    {
+      "case_id": "side-effect-03-prevent-duplicate-admission-when-the-provider-response-is-lost",
+      "pytest_nodes": [
+        "tests/failure/test_response_loss.py::test_lost_response_reconciles_without_duplicate_side_effect"
+      ]
+    },
+    {
+      "case_id": "side-effect-04-reject-dispatch-when-approval-parameters-differ-from-the-operation-has",
+      "pytest_nodes": [
+        "tests/failure/test_response_loss.py::test_stable_operation_rejects_changed_parameters"
+      ]
+    },
+    {
+      "case_id": "side-effect-05-reconcile-before-retrying-an-operation-in-unknown-state",
+      "pytest_nodes": [
+        "tests/unit/test_contracts.py::test_reconcile_unknown"
+      ]
+    },
+    {
+      "case_id": "side-effect-06-fence-the-authoritative-outcome-commit-to-the-owning-attempt",
+      "pytest_nodes": [
+        "tests/integration/test_fencing.py::test_postgres_zombie_and_idempotent_commit"
+      ]
+    },
+    {
+      "case_id": "context-01-prioritize-platform-policy-over-untrusted-document-instructions",
+      "pytest_nodes": [
+        "tests/security/test_prompt_injection.py::test_malicious_pdf_and_web_cannot_authorize_external_side_effect"
+      ]
+    },
+    {
+      "case_id": "context-02-fit-relevant-evidence-inside-a-deterministic-token-budget",
+      "pytest_nodes": [
+        "tests/unit/test_context_manager.py::test_context_pipeline_prioritizes_deduplicates_compresses_and_budgets"
+      ]
+    },
+    {
+      "case_id": "context-03-exclude-low-priority-context-while-recording-the-exclusion-reason",
+      "pytest_nodes": [
+        "tests/unit/test_context_manager.py::test_context_budget_records_excluded_uncompressible_candidate"
+      ]
+    },
+    {
+      "case_id": "context-04-preserve-trust-labels-across-web-mcp-user-and-platform-context",
+      "pytest_nodes": [
+        "tests/unit/test_context_manager.py::test_context_rejects_invalid_relevance_or_trust"
+      ]
+    },
+    {
+      "case_id": "context-05-summarize-a-conversation-without-changing-immutable-task-evidence",
+      "pytest_nodes": [
+        "tests/integration/test_memory.py::test_conversation_summaries_are_versioned_replay_safe_and_workspace_scoped"
+      ]
+    },
+    {
+      "case_id": "context-06-use-project-memory-only-when-its-source-and-version-remain-valid",
+      "pytest_nodes": [
+        "tests/integration/test_memory.py::test_project_memory_supersedes_without_losing_history"
+      ]
+    }
+  ]
+}

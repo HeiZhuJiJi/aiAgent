@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 from uuid import UUID
 
 from alembic import command
@@ -7,6 +8,9 @@ from alembic.config import Config
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from enterprise_agent.procurement.demo import DEMO_WORKSPACE_ID, seed_demo_suppliers
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 async def main() -> None:

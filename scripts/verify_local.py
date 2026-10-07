@@ -4,6 +4,11 @@ import sys
 from pathlib import Path
 from uuid import uuid4
 
+if sys.platform == "win32":
+    import asyncio
+
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 from dotenv import dotenv_values
 from sqlalchemy import URL
 
@@ -25,6 +30,8 @@ for key, user, port, db, pw in [
         database=db,
     ).render_as_string(hide_password=False)
 os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
+os.environ["REDIS_URL"] = "redis://127.0.0.1:56379/0"
+os.environ["ADMISSION_NAMESPACE"] = "test:admission:verify:" + str(uuid4())
 subprocess.run([sys.executable, "scripts/init_procurement.py"], check=True)
 raise SystemExit(
     subprocess.call(

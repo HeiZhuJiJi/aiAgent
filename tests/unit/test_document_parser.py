@@ -78,6 +78,13 @@ def test_text_formats_normalize_and_locate(media_type, blob, locator) -> None:
     assert parts[0].locator == locator
 
 
+def test_database_forbidden_nul_bytes_are_removed_at_parser_boundary() -> None:
+    parts = parse_document(b"safe\x00 text\n", "text/plain")
+
+    assert parts[0].content == "safe text"
+    assert "\x00" not in parts[0].content
+
+
 def test_parser_rejects_unsupported_and_expanding_office_archives() -> None:
     with pytest.raises(DomainError, match="unsupported"):
         parse_document(b"data", "application/octet-stream")

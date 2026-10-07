@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "GapType": {
+      "enum": [
+        "MISSING",
+        "UNSUPPORTED",
+        "CONFLICT",
+        "STALE",
+        "AMBIGUOUS",
+        "INVALID",
+        "UNKNOWN",
+        "AUTHORIZATION"
+      ],
+      "title": "GapType",
+      "type": "string"
+    },
+    "RecoveryAction": {
+      "enum": [
+        "RETRY",
+        "REPLAN",
+        "REPAIR",
+        "ADDITIONAL_VERIFICATION",
+        "RECONCILE",
+        "REFRESH",
+        "CLARIFICATION",
+        "AWAIT_AUTHORIZATION",
+        "DELIVERY_DOWNGRADE"
+      ],
+      "title": "RecoveryAction",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "workspace_id": {
+      "format": "uuid",
+      "title": "Workspace Id",
+      "type": "string"
+    },
+    "task_id": {
+      "format": "uuid",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "requirement_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requirement Id"
+    },
+    "gap_type": {
+      "$ref": "#/$defs/GapType"
+    },
+    "recovery_action": {
+      "$ref": "#/$defs/RecoveryAction"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "assessment_ref": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Assessment Ref"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "workspace_id",
+    "task_id",
+    "gap_type",
+    "recovery_action",
+    "description",
+    "created_at"
+  ],
+  "title": "Gap",
+  "type": "object"
+}
